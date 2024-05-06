@@ -8,5 +8,14 @@ public interface ITutorialPageViewModel : IPageViewModelInterface
 {
     public bool InTutorial { get; }
 
-    public ReactiveCommand<Unit, Unit> BeginTutorialCommand { get; set; }
+    public int CurrentStep { get; }
+    public int MaxSteps { get; set; }
+
+    public ReactiveCommand<Unit, Unit> BeginTutorialCommand { get; }
+
+    public ReactiveCommand<Unit, int> NextStepCommand { get; }
+
+    public ReactiveCommand<Unit, int> BackStepCommand { get; }
+
+    public ReactiveCommand<Unit, Unit> EndTutorialCommand { get; }
 }

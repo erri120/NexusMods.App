@@ -11,7 +11,14 @@ namespace NexusMods.App.UI.Pages.Tutorial;
 public class TutorialPageViewModel : APageViewModel<ITutorialPageViewModel>, ITutorialPageViewModel
 {
     [Reactive] public bool InTutorial { get; private set; }
-    public ReactiveCommand<Unit, Unit> BeginTutorialCommand { get; set; }
+
+    [Reactive] public int CurrentStep { get; private set; } = -1;
+    [Reactive] public int MaxSteps { get; set; }
+
+    public ReactiveCommand<Unit, Unit> BeginTutorialCommand { get; }
+    public ReactiveCommand<Unit, int> NextStepCommand { get; }
+    public ReactiveCommand<Unit, int> BackStepCommand { get; }
+    public ReactiveCommand<Unit, Unit> EndTutorialCommand { get; }
 
     public TutorialPageViewModel() : this(DesignWindowManager.Instance) { }
 
@@ -20,6 +27,26 @@ public class TutorialPageViewModel : APageViewModel<ITutorialPageViewModel>, ITu
         BeginTutorialCommand = ReactiveCommand.Create(() =>
         {
             InTutorial = true;
+            CurrentStep = 0;
         }, this.WhenAnyValue(vm => vm.InTutorial, x=> !x));
+
+        EndTutorialCommand = ReactiveCommand.Create(() =>
+        {
+            InTutorial = false;
+        }, this.WhenAnyValue(vm => vm.InTutorial));
+
+        NextStepCommand = ReactiveCommand.Create(() =>
+        {
+            var nextStep = CurrentStep + 1;
+            CurrentStep = nextStep;
+            return CurrentStep;
+        }, this.WhenAnyValue(vm => vm.CurrentStep, x => x + 1 < MaxSteps));
+
+        BackStepCommand = ReactiveCommand.Create(() =>
+        {
+            var nextStep = CurrentStep - 1;
+            CurrentStep = nextStep;
+            return CurrentStep;
+        }, this.WhenAnyValue(vm => vm.CurrentStep, x => x > 0));
     }
 }

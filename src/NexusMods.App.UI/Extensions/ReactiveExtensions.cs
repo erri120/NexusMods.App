@@ -3,6 +3,7 @@ using System.Reactive.Linq;
 using Avalonia;
 using DynamicData;
 using DynamicData.Alias;
+using DynamicData.Kernel;
 
 namespace NexusMods.App.UI.Extensions;
 
@@ -72,5 +73,10 @@ public static class ReactiveExtensions
         TTarget target) where TTarget : StyledElement
     {
         return obs.BindToClasses(target, "Active");
+    }
+
+    public static IObservable<T> WhereHasValue<T>(this IObservable<Optional<T>> source) where T : notnull
+    {
+        return source.Where(item => item.HasValue).Select(item => item.Value);
     }
 }

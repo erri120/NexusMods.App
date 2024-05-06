@@ -14,15 +14,26 @@
     </Design.DataContext>
 
     <Canvas Background="#222222">
-        <Border x:Name="TutorialBorder" ZIndex="2">
+        <Canvas x:Name="TutorialCanvas" ZIndex="2" IsVisible="False">
+            <Border Width="360" Height="70" Canvas.Top="80" Canvas.Left="100" Background="#222222">
+                <Grid RowDefinitions="*, 40">
+                    <TextBlock Grid.Row="0" x:Name="TutorialText"/>
 
-        </Border>
+                    <Grid Grid.Row="1" ColumnDefinitions="Auto, Auto, *, Auto" VerticalAlignment="Bottom">
+                        <Button x:Name="TutorialCloseButton" HorizontalAlignment="Left" Grid.Column="0">Close</Button>
+                        <Button x:Name="TutorialBackButton" HorizontalAlignment="Left" Grid.Column="1">Back</Button>
+                        <TextBlock x:Name="TutorialStepCounter" HorizontalAlignment="Center" VerticalAlignment="Bottom" Grid.Column="2"/>
+                        <Button x:Name="TutorialNextButton" HorizontalAlignment="Right" Grid.Column="3">Next</Button>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Canvas>
 
-        <local:CustomControl x:Name="OverlayControl" ZIndex="1" Background="#44000000" IsVisible="False"/>
+        <local:CustomControl x:Name="OverlayControl" ZIndex="1" Background="#AA000000" IsVisible="False"/>
 
         <Border x:Name="ContentBorder" ZIndex="0">
             <StackPanel Margin="20" Orientation="Horizontal" Spacing="20" VerticalAlignment="Top">
-                <Button x:Name="BeginTutorialButton">Begin Tutorial</Button>
+                <Button x:Name="BeginTutorialButton">Help</Button>
 
                 <TextBlock x:Name="Control1">This is some text!</TextBlock>
 

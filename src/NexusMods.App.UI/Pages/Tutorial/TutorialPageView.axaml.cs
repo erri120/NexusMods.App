@@ -6,6 +6,8 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.ReactiveUI;
 using Avalonia.VisualTree;
+using DynamicData;
+using DynamicData.Kernel;
 using JetBrains.Annotations;
 using ReactiveUI;
 
@@ -14,38 +16,117 @@ namespace NexusMods.App.UI.Pages.Tutorial;
 [UsedImplicitly]
 public partial class TutorialPageView : ReactiveUserControl<ITutorialPageViewModel>
 {
+    private Control[] _controlsToHighlight;
+
+    private string[] _texts =
+    [
+        "This text is super cool!",
+        "This button does awesome things!"
+    ];
+
     public TutorialPageView()
     {
         InitializeComponent();
+        _controlsToHighlight =
+        [
+            Control1,
+            Control2,
+        ];
 
         this.WhenActivated(disposables =>
         {
+            this.WhenAnyValue(view => view.ViewModel)
+                .WhereNotNull()
+                .Subscribe(vm => vm.MaxSteps = _controlsToHighlight.Length)
+                .DisposeWith(disposables);
+
             this.BindCommand(ViewModel, vm => vm.BeginTutorialCommand, view => view.BeginTutorialButton)
+                .DisposeWith(disposables);
+
+            this.BindCommand(ViewModel, vm => vm.NextStepCommand, view => view.TutorialNextButton)
+                .DisposeWith(disposables);
+
+            this.BindCommand(ViewModel, vm => vm.BackStepCommand, view => view.TutorialBackButton)
+                .DisposeWith(disposables);
+
+            this.BindCommand(ViewModel, vm => vm.EndTutorialCommand, view => view.TutorialCloseButton)
                 .DisposeWith(disposables);
 
             this.WhenAnyValue(view => view.ViewModel!.InTutorial)
                 .Subscribe(value =>
                 {
-                    TutorialBorder.IsVisible = value;
+                    TutorialCanvas.IsVisible = value;
                     OverlayControl.IsVisible = value;
                 })
                 .DisposeWith(disposables);
 
-            this.WhenAnyValue(view => view.Control1.Bounds)
-                .Select(_ => Control1.GetTransformedBounds())
-                .Where(bounds => bounds.HasValue)
-                .Select(bounds => bounds!.Value.Clip)
-                .Select(rect => new AvaloniaList<Rect>
+            this.WhenAnyValue(view => view.ViewModel!.CurrentStep)
+                .Where(x => 0 <= x && x < _controlsToHighlight.Length)
+                .Select(i => _controlsToHighlight[i])
+                .Select(GetList)
+                .Subscribe(masks => OverlayControl.Masks = masks)
+                .DisposeWith(disposables);
+
+            this.WhenAnyValue(view => view.ViewModel!.CurrentStep)
+                .Where(x => 0 <= x && x < _texts.Length)
+                .Select(i => _texts[i])
+                .Subscribe(text => TutorialText.Text = text)
+                .DisposeWith(disposables);
+
+            this.WhenAnyValue(view => view.ViewModel!.CurrentStep, view => view.ViewModel!.MaxSteps)
+                .Select(tuple =>
                 {
-                    rect.Inflate(thickness: 5.0),
+                    var (current, max) = tuple;
+                    return $"{current + 1}/{max}";
                 })
-                .BindToView(this, view => view.OverlayControl.Masks)
+                .Subscribe(text => TutorialStepCounter.Text = text)
+                .DisposeWith(disposables);
+
+            this.WhenAnyValue(view => view.Control1.Bounds, view => view.ViewModel!.CurrentStep)
+                .Select(tuple =>
+                {
+                    var index = _controlsToHighlight.IndexOf(Control1);
+                    return tuple.Item2 == index ? GetList(Control1) : null;
+                })
+                .WhereNotNull()
+                .Subscribe(masks => OverlayControl.Masks = masks)
+                .DisposeWith(disposables);
+
+            this.WhenAnyValue(view => view.Control2.Bounds, view => view.ViewModel!.CurrentStep)
+                .Select(tuple =>
+                {
+                    var index = _controlsToHighlight.IndexOf(Control2);
+                    return tuple.Item2 == index ? GetList(Control2) : null;
+                })
+                .WhereNotNull()
+                .Subscribe(masks => OverlayControl.Masks = masks)
                 .DisposeWith(disposables);
         });
     }
 
+    private static AvaloniaList<Rect>? GetList(Control control)
+    {
+        var clip = GetClip(control);
+        return clip.HasValue
+            ? new AvaloniaList<Rect>
+            {
+                clip.Value,
+            }
+            : null;
+    }
+
+    private static Optional<Rect> GetClip(Control control)
+    {
+        var transformedBounds = control.GetTransformedBounds();
+        if (!transformedBounds.HasValue) return Optional<Rect>.None;
+        return transformedBounds.Value.Clip;
+    }
+
     protected override Size ArrangeOverride(Size finalSize)
     {
+        TutorialCanvas.Width = finalSize.Width;
+        TutorialCanvas.Height = finalSize.Height;
+
         OverlayControl.Width = finalSize.Width;
         OverlayControl.Height = finalSize.Height;
 
