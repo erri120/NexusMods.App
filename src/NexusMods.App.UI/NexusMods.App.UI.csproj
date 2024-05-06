@@ -544,6 +544,9 @@
         <Compile Update="ImageCache.cs">
           <DependentUpon>IImageCache.cs</DependentUpon>
         </Compile>
+        <Compile Update="Pages\Tutorial\TutorialPageViewModel.cs">
+          <DependentUpon>ITutorialPageViewModel.cs</DependentUpon>
+        </Compile>
     </ItemGroup>
 
     <ItemGroup>

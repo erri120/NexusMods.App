@@ -1,13 +1,13 @@
 <reactive:ReactiveUserControl
-    x:TypeArguments="local:I${NAME}ViewModel"
+    x:TypeArguments="local:ITutorialPageViewModel"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:reactive="http://reactiveui.net"
-    xmlns:local="using:NexusMods.App.UI"
+    xmlns:local="using:NexusMods.App.UI.Pages.Tutorial"
     mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="400"
-    x:Class="NexusMods.App.UI.${NAME}View">
+    x:Class="NexusMods.App.UI.Pages.Tutorial.TutorialPageView">
 
     This is the View
 

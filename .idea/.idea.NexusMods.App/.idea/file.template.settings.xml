@@ -14,12 +14,12 @@
     </j2ee_templates>
     <default_templates>
       <template name="NexusMods MVVM.cs" file-name="I${NAME}ViewModel" reformat="true" live-template-enabled="false">
-        <template name="NexusMods MVVM.cs.child.0.cs" file-name="${NAME}View" reformat="true" live-template-enabled="false" />
-        <template name="NexusMods MVVM.cs.child.1.axaml" file-name="${NAME}View" reformat="true" live-template-enabled="false" />
+        <template name="NexusMods MVVM.cs.child.0༏ext༏.axaml.cs" file-name="${NAME}View" reformat="true" live-template-enabled="false" />
         <template name="NexusMods MVVM.cs.child.2.cs" file-name="${NAME}ViewModel" reformat="true" live-template-enabled="false" />
         <template name="NexusMods MVVM.cs.child.3.cs" file-name="${NAME}DesignViewModel" reformat="true" live-template-enabled="false" />
+        <template name="NexusMods MVVM.cs.child.1.axaml" file-name="${NAME}View" reformat="true" live-template-enabled="false" />
       </template>
-      <template name="NexusMods MVVM.cs.child.0.cs" file-name="${NAME}View" reformat="true" live-template-enabled="false" />
+      <template name="NexusMods MVVM.cs.child.0༏ext༏.axaml.cs" file-name="${NAME}View" reformat="true" live-template-enabled="false" />
       <template name="NexusMods MVVM.cs.child.1.axaml" file-name="${NAME}View" reformat="true" live-template-enabled="false" />
       <template name="NexusMods MVVM.cs.child.2.cs" file-name="${NAME}ViewModel" reformat="true" live-template-enabled="false" />
       <template name="NexusMods MVVM.cs.child.3.cs" file-name="${NAME}DesignViewModel" reformat="true" live-template-enabled="false" />
