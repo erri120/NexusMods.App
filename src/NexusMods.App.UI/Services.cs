@@ -264,6 +264,7 @@ public static class Services
 
             // Other
             .AddSingleton<InjectedViewLocator>()
+            .AddSingleton<LogUploadService>()
             .AddFileSystem()
 
             .AddRepository<DownloadAnalysis.Model>([DownloadAnalysis.NumberOfEntries, DownloadAnalysis.SuggestedName])

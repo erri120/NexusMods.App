@@ -7,6 +7,7 @@ using DynamicData.Kernel;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using NexusMods.Abstractions.NexusWebApi;
+using NexusMods.Abstractions.Settings;
 using NexusMods.App.UI.Controls.Navigation;
 using NexusMods.App.UI.Pages.Settings;
 using NexusMods.App.UI.Windows;
@@ -22,7 +23,12 @@ public class TopBarViewModel : AViewModel<ITopBarViewModel>, ITopBarViewModel
     private readonly ILoginManager _loginManager;
     private readonly ILogger<TopBarViewModel> _logger;
 
-    public TopBarViewModel(ILogger<TopBarViewModel> logger, ILoginManager loginManager, IWindowManager windowManager)
+    public TopBarViewModel(
+        ILogger<TopBarViewModel> logger,
+        ILoginManager loginManager,
+        IWindowManager windowManager,
+        ISettingsManager settingsManager,
+        LogUploadService logUploadService)
     {
         _logger = logger;
         _loginManager = loginManager;
@@ -39,11 +45,25 @@ public class TopBarViewModel : AViewModel<ITopBarViewModel>, ITopBarViewModel
             var page = new PageData
             {
                 Context = new SettingsPageContext(),
-                FactoryId = SettingsPageFactory.StaticId
+                FactoryId = SettingsPageFactory.StaticId,
             };
 
             var behavior = workspaceController.GetOpenPageBehavior(page, info, Optional<PageIdBundle>.None);
             workspaceController.OpenPage(workspaceController.ActiveWorkspace!.Id, page, behavior);
+        });
+
+        UploadLogsCommand = ReactiveCommand.CreateFromTask(async () =>
+        {
+            try
+            {
+                var uri = await logUploadService.UploadLogs();
+                return uri;
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Exception while uploading logs");
+                return null;
+            }
         });
 
         this.WhenActivated(d =>
@@ -142,4 +162,6 @@ public class TopBarViewModel : AViewModel<ITopBarViewModel>, ITopBarViewModel
         ReactiveCommand.Create(() => { }, Observable.Return(false));
 
     public ReactiveCommand<NavigationInformation, Unit> SettingsActionCommand { get; }
+
+    public ReactiveCommand<Unit, Uri?> UploadLogsCommand { get; }
 }

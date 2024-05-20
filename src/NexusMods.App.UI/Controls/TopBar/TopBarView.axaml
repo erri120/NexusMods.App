@@ -52,6 +52,10 @@
                 <icons:UnifiedIcon Classes="Help ForegroundSubdued" />
             </Button>
 
+            <Button Classes="Action" x:Name="UploadLogsButton" ToolTip.Tip="Upload Logs">
+                <icons:UnifiedIcon Classes="BugReport ForegroundSubdued"/>
+            </Button>
+
             <navigation:NavigationControl Classes="Action" x:Name="SettingsActionButton">
                 <icons:UnifiedIcon Classes="Cog ForegroundSubdued" />
             </navigation:NavigationControl>

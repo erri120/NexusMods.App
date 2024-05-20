@@ -8,6 +8,9 @@ public static class IconValues
 {
 #region Action
 
+    // https://pictogrammers.com/library/mdi/icon/bug/
+    public static readonly IconValue BugReport = new ProjektankerIcon("mdi-bug");
+
     // https://pictogrammers.com/library/mdi/icon/delete-outline/
     public static readonly IconValue DeleteOutline = new ProjektankerIcon("mdi-delete-outline");
 

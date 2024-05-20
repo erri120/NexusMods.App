@@ -80,7 +80,8 @@
             <icons:UnifiedIcon Classes="ModLibrary" />
             <icons:UnifiedIcon Classes="ListFilled" />
             <icons:UnifiedIcon Classes="FileEdit"/>
-            
+            <icons:UnifiedIcon Classes="BugReport"/>
+
         </WrapPanel>
     </Design.PreviewWith>
 
@@ -396,7 +397,11 @@
         <Setter Property="Value" Value="{x:Static icons:IconValues.ListFilled}"/>
     </Style>
 
-    <Style Selector="icons|UnifiedIcon.ListFilled">
+    <Style Selector="icons|UnifiedIcon.FileEdit">
         <Setter Property="Value" Value="{x:Static icons:IconValues.FileEdit}"/>
+    </Style>
+
+    <Style Selector="icons|UnifiedIcon.BugReport">
+        <Setter Property="Value" Value="{x:Static icons:IconValues.BugReport}"/>
     </Style>
 </Styles>

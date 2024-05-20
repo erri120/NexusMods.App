@@ -1,4 +1,6 @@
 using System.Reactive.Disposables;
+using System.Reactive.Linq;
+using Avalonia.Controls;
 using Avalonia.ReactiveUI;
 using NexusMods.Icons;
 using ReactiveUI;
@@ -28,6 +30,9 @@ public partial class TopBarView : ReactiveUserControl<ITopBarViewModel>
             this.BindCommand(ViewModel, vm => vm.HelpActionCommand, view => view.HelpActionButton)
                 .DisposeWith(d);
 
+            this.BindCommand(ViewModel, vm => vm.UploadLogsCommand, view => view.UploadLogsButton)
+                .DisposeWith(d);
+
             this.BindCommand(ViewModel, vm => vm.SettingsActionCommand, view => view.SettingsActionButton)
                 .DisposeWith(d);
 
@@ -55,6 +60,16 @@ public partial class TopBarView : ReactiveUserControl<ITopBarViewModel>
                 .DisposeWith(d);
 
             this.OneWayBind(ViewModel, vm => vm.ActiveWorkspaceTitle, view => view.ActiveWorkspaceTitleTextBlock.Text)
+                .DisposeWith(d);
+
+            this.WhenAnyObservable(view => view.ViewModel!.UploadLogsCommand)
+                .WhereNotNull()
+                .SubscribeWithErrorLogging(uri =>
+                {
+                    var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+                    if (clipboard is null) return;
+                    clipboard.SetTextAsync(uri.ToString());
+                })
                 .DisposeWith(d);
         });
     }

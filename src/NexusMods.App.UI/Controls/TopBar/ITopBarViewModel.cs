@@ -28,5 +28,5 @@ public interface ITopBarViewModel : IViewModelInterface
     public ReactiveCommand<Unit, Unit> HelpActionCommand { get; }
     public ReactiveCommand<NavigationInformation, Unit> SettingsActionCommand { get; }
 
-
+    public ReactiveCommand<Unit, Uri?> UploadLogsCommand { get; }
 }

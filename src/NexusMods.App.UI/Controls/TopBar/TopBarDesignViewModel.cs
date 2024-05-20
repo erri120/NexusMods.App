@@ -63,4 +63,5 @@ public class TopBarDesignViewModel : AViewModel<ITopBarViewModel>, ITopBarViewMo
     public ReactiveCommand<Unit, Unit> HelpActionCommand { get; } = ReactiveCommand.Create(() => { }, Observable.Return(false));
 
     public ReactiveCommand<NavigationInformation, Unit> SettingsActionCommand { get; } = ReactiveCommand.Create<NavigationInformation>(_ => { }, Observable.Return(false));
+    public ReactiveCommand<Unit, Uri?> UploadLogsCommand { get; } = ReactiveCommand.Create<Uri?>(() => new Uri("https://example.org"));
 }
