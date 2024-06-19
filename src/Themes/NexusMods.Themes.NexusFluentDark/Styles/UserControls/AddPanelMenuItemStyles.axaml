@@ -1,0 +1,21 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:NexusMods.App.UI.Controls;assembly=NexusMods.App.UI"
+        xmlns:icons="clr-namespace:NexusMods.Icons;assembly=NexusMods.Icons">
+    <Design.PreviewWith>
+        <Border Padding="20">
+            <controls:AddPanelMenuItem>
+                <controls:AddPanelMenuItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <icons:UnifiedIcon Size="24" Value="{x:Static icons:IconValues.Help}" />
+                        <icons:UnifiedIcon Size="8" Value="{x:Static icons:IconValues.Add}" />
+                    </StackPanel>
+                </controls:AddPanelMenuItem.Header>
+            </controls:AddPanelMenuItem>
+        </Border>
+    </Design.PreviewWith>
+
+    
+    <!-- Add Styles Here -->
+</Styles>
+

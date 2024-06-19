@@ -1,0 +1,44 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:controls="clr-namespace:NexusMods.App.UI.Controls;assembly=NexusMods.App.UI">
+
+    <ControlTheme x:Key="{x:Type controls:AddPanelMenuItem}" TargetType="controls:AddPanelMenuItem">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Panel x:Name="Panel">
+                    <ContentPresenter x:Name="HeaderContentPresenter"
+                                      Content="{TemplateBinding Header}"
+                                      ContentTemplate="{TemplateBinding HeaderTemplate}"/>
+
+                    <PathIcon x:Name="DropDownGlyph"/>
+
+                    <Popup Name="PART_Popup"
+                           WindowManagerAddShadowHint="False"
+                           MinWidth="{Binding Bounds.Width, RelativeSource={RelativeSource TemplatedParent}}"
+                           IsLightDismissEnabled="True"
+                           IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}"
+                           Placement="BottomEdgeAlignedLeft"
+                           OverlayInputPassThroughElement="{Binding $parent[Menu]}">
+                        <Border Background="{DynamicResource MenuFlyoutPresenterBackground}"
+                                BorderBrush="{DynamicResource MenuFlyoutPresenterBorderBrush}"
+                                BorderThickness="{DynamicResource MenuFlyoutPresenterBorderThemeThickness}"
+                                Padding="{DynamicResource MenuFlyoutPresenterThemePadding}"
+                                MaxWidth="{DynamicResource FlyoutThemeMaxWidth}"
+                                MinHeight="{DynamicResource MenuFlyoutThemeMinHeight}"
+                                HorizontalAlignment="Stretch"
+                                CornerRadius="{DynamicResource OverlayCornerRadius}">
+                            <ScrollViewer>
+                                <ItemsPresenter Name="PART_ItemsPresenter"
+                                                ItemsPanel="{TemplateBinding ItemsPanel}"
+                                                Margin="{DynamicResource MenuFlyoutScrollerMargin}"
+                                                Grid.IsSharedSizeScope="True" />
+                            </ScrollViewer>
+                        </Border>
+                    </Popup>
+                </Panel>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+
+</ResourceDictionary>
+
