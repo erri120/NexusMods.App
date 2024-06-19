@@ -34,15 +34,18 @@
             <Setter Property="BorderBrush" Value="{StaticResource StrokeTranslucentWeakBrush}" />
         </Style>
 
-        <Style Selector="^:pointerover /template/ Border#Background">
-            <Setter Property="BorderBrush" Value="{StaticResource StrokeTranslucentSubduedBrush}" />
-            <Setter Property="BorderThickness" Value="1" />
+        <Style Selector="^ /template/ ContentControl#ContentPresenter">
+            <Setter Property="Foreground" Value="{StaticResource NeutralSubdued}"></Setter>
         </Style>
 
-        <Style Selector="^:pointerover /template/ Border#DropDownOverlay">
+        <Style Selector="^ /template/ ContentControl#ContentPresenter:pointerover">
+            <Setter Property="Foreground" Value="{StaticResource NeutralStrong}"></Setter>
+        </Style>
+
+        <Style Selector="^ /template/ Border#DropDownOverlay:pointerover">
             <Setter Property="Margin" Value="0,0,0,0" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="BorderBrush" Value="{StaticResource StrokeTranslucentModerateBrush}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Background" Value="{StaticResource SurfaceMid}"/>
         </Style>
 
         <!-- Change expander icon -->
@@ -52,7 +55,7 @@
         </Style>
 
         <Style Selector="^:pointerover PathIcon#DropDownGlyph">
-            <Setter Property="Foreground" Value="{StaticResource NeutralModerateBrush}" />
+            <Setter Property="Foreground" Value="{StaticResource NeutralStrong}" />
         </Style>
 
         <!-- Style the popup list of items -->
