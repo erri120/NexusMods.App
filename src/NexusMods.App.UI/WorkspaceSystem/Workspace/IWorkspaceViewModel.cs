@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
 using Avalonia;
+using DynamicData;
+using DynamicData.Kernel;
 using JetBrains.Annotations;
 using NexusMods.App.UI.Windows;
 
@@ -40,6 +42,12 @@ public interface IWorkspaceViewModel : IViewModelInterface
     public ReadOnlyObservableCollection<IPanelResizerViewModel> Resizers { get; }
 
     public ReadOnlyObservableCollection<IAddPanelButtonViewModel> AddPanelButtonViewModels { get; }
+
+    public IObservable<IChangeSet<IPanelTabViewModel>> AllTabs { get; }
+
+    public IObservable<Optional<PageStatus>> ObservePageStatus(Func<IPageFactoryContext, bool> predicate);
+
+    public IObservable<Optional<PageStatus>> ObservePageStatus<TPageContext>(Func<TPageContext, bool>? predicate = null);
 
     public bool IsHorizontal { get; }
 

@@ -25,7 +25,9 @@ public class HomeLeftMenuViewModel : AViewModel<IHomeLeftMenuViewModel>, IHomeLe
         WorkspaceId = workspaceId;
         var items = new ILeftMenuItemViewModel[]
         {
-            new IconViewModel
+            new IconViewModel(workspaceController, workspaceId,
+                PageContextPredicate
+            )
             {
                 Name = Language.MyGames,
                 Icon = IconValues.Game,
@@ -60,5 +62,10 @@ public class HomeLeftMenuViewModel : AViewModel<IHomeLeftMenuViewModel>, IHomeLe
         };
 
         Items = new ReadOnlyObservableCollection<ILeftMenuItemViewModel>(new ObservableCollection<ILeftMenuItemViewModel>(items));
+    }
+
+    private bool PageContextPredicate(IPageFactoryContext context)
+    {
+        return context is MyGamesPageContext;
     }
 }

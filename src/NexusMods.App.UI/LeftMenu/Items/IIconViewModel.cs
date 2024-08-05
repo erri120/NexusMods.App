@@ -1,5 +1,7 @@
 using System.Reactive;
+using DynamicData.Kernel;
 using NexusMods.App.UI.Controls.Navigation;
+using NexusMods.App.UI.WorkspaceSystem;
 using NexusMods.Icons;
 using ReactiveUI;
 
@@ -11,4 +13,5 @@ public interface IIconViewModel : ILeftMenuItemViewModel
     public IconValue Icon { get; set; }
     public string[] Badges { get; set; }
     public ReactiveCommand<NavigationInformation, Unit> NavigateCommand { get; set; }
+    public Optional<PageStatus> PageStatus { get; set; }
 }

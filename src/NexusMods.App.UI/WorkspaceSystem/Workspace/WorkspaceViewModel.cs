@@ -5,6 +5,7 @@ using System.Reactive.Linq;
 using Avalonia;
 using DynamicData;
 using DynamicData.Aggregation;
+using DynamicData.Binding;
 using DynamicData.Kernel;
 using Microsoft.Extensions.Logging;
 using NexusMods.App.UI.Extensions;
@@ -50,6 +51,8 @@ public class WorkspaceViewModel : AViewModel<IWorkspaceViewModel>, IWorkspaceVie
     private readonly ReadOnlyObservableCollection<IPanelResizerViewModel> _resizers;
     public ReadOnlyObservableCollection<IPanelResizerViewModel> Resizers => _resizers;
 
+    public IObservable<IChangeSet<IPanelTabViewModel>> AllTabs { get; }
+
     private readonly ILogger _logger;
     private readonly IWorkspaceController _workspaceController;
     private readonly PageFactoryController _factoryController;
@@ -81,8 +84,17 @@ public class WorkspaceViewModel : AViewModel<IWorkspaceViewModel>, IWorkspaceVie
             .Do(_ => UpdateResizers())
             .SubscribeWithErrorLogging();
 
+        var allTabsConnectableObservable = _panelSource
+            .Connect()
+            .MergeManyChangeSets(panel => panel.Tabs.ToObservableChangeSet())
+            .Replay(bufferSize: 1);
+
+        AllTabs = allTabsConnectableObservable;
+
         this.WhenActivated(disposables =>
         {
+            allTabsConnectableObservable.Connect().DisposeWith(disposables);
+
             // Workspace resizing
             this.WhenAnyValue(vm => vm.IsHorizontal)
                 .DistinctUntilChanged()
@@ -571,5 +583,84 @@ public class WorkspaceViewModel : AViewModel<IWorkspaceViewModel>, IWorkspaceVie
         {
             panel.LogicalBounds = newState[panel.Id].Rect;
         }
+    }
+
+    public IObservable<Optional<PageStatus>> ObservePageStatus<TPageContext>(Func<TPageContext, bool>? predicate = null)
+    {
+        predicate ??= static _ => true;
+
+        return ObservePageStatus(context =>
+        {
+            if (context is not TPageContext actualContext) return false;
+            return predicate(actualContext);
+        });
+    }
+
+    public IObservable<Optional<PageStatus>> ObservePageStatus(Func<IPageFactoryContext, bool> predicate)
+    {
+        // NOTE(erri120): I hate Dynamic Data sometimes. This is pure jank.
+        var observable = AllTabs
+            .Filter(tab =>
+            {
+                var context = tab.Contents.PageData.Context;
+                return predicate(context);
+            })
+            .SelectMany(changeSet => changeSet
+                .Select(change =>
+                {
+                    if (change.Reason == ListChangeReason.Add)
+                    {
+                        return [(ListChangeReason.Add, change.Item.Current)];
+                    }
+
+                    if (change.Reason == ListChangeReason.Remove)
+                    {
+                        return [(ListChangeReason.Remove, change.Item.Current)];
+                    }
+
+                    if (change.Reason == ListChangeReason.AddRange)
+                    {
+                        return change.Range.Select(x => (ListChangeReason.Add, x)).ToArray();
+                    }
+
+                    if (change.Reason == ListChangeReason.RemoveRange)
+                    {
+                        return change.Range.Select(x => (ListChangeReason.Remove, x)).ToArray();
+                    }
+
+                    if (change.Reason == ListChangeReason.Replace)
+                    {
+                        return [];
+                    }
+
+                    return [];
+                }))
+            .SelectMany(arr => arr)
+            .Publish();
+
+        var closeObservable = observable.Where(tuple => tuple.Item1 == ListChangeReason.Remove).Select(_ => Optional<PageStatus>.None);
+        var statusObservable = observable
+            .Where(tuple => tuple.Item1 == ListChangeReason.Add)
+            .Select(tuple =>
+            {
+                var tab = tuple.Item2;
+                return tab.WhenAnyValue(x => x.Header.IsSelected)
+                    .Select(isSelected => Optional<PageStatus>.Create(isSelected ? PageStatus.Visible :PageStatus.Open));
+            })
+            .Switch();
+
+        observable.Connect();
+        return closeObservable.Merge(statusObservable);
+    }
+
+    public IPanelTabViewModel? FindPage<TPageContext>(TPageContext? pageContext = null) where TPageContext : class, IPageFactoryContext
+    {
+        Func<IPanelTabViewModel, bool> comparer = pageContext is null ? ByType : ByValue;
+
+        var res = Panels.Select(panel => panel.Tabs.FirstOrDefault(comparer)).NotNull().FirstOrDefault();
+        return res;
+
+        bool ByType(IPanelTabViewModel tab) => tab.Contents.PageData.Context is TPageContext;
+        bool ByValue(IPanelTabViewModel tab) => tab.Contents.PageData.Context.Equals(pageContext);
     }
 }
