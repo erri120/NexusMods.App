@@ -57,21 +57,21 @@ public class MyGamesViewModel : APageViewModel<IMyGamesViewModel>, IMyGamesViewM
             // Managed games widgets
             Loadout.ObserveAll(conn)
                 .Filter(l => l.IsVisible())
-                .ChangeKey(loadout => loadout.InstallationInstance.LocationsRegister[LocationId.Game])
-                .EnsureUniqueKeys()
+                .Transform(loadout => loadout.InstallationInstance)
+                .ChangeKey(instance => instance.GameMetadataId)
                 .OnUI()
-                .Transform(loadout =>
+                .Transform(installation =>
                 {
                     var vm = provider.GetRequiredService<IGameWidgetViewModel>();
-                    vm.Installation = loadout.InstallationInstance;
+                    vm.Installation = installation;
 
                     vm.RemoveAllLoadoutsCommand = ReactiveCommand.CreateFromTask(async () =>
                     {
-                        if (GetJobRunningForGameInstallation(loadout.InstallationInstance).IsT2) return;
-                        await Task.Run(async () => await RemoveAllLoadouts(loadout.InstallationInstance));
+                        if (GetJobRunningForGameInstallation(installation).IsT2) return;
+                        await Task.Run(async () => await RemoveAllLoadouts(installation));
                     });
 
-                    vm.ViewGameCommand = ReactiveCommand.Create(() => { NavigateToLoadout(conn, loadout); });
+                    // vm.ViewGameCommand = ReactiveCommand.Create(() => { NavigateToLoadout(conn, loadout); });
 
                     return vm;
                 })
