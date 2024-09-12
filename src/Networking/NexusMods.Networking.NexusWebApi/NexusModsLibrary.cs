@@ -3,6 +3,7 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using NexusMods.Abstractions.Games.DTO;
 using NexusMods.Abstractions.Jobs;
+using NexusMods.Abstractions.Media;
 using NexusMods.Abstractions.NexusModsLibrary;
 using NexusMods.Abstractions.NexusWebApi;
 using NexusMods.Abstractions.NexusWebApi.DTOs;
@@ -21,6 +22,8 @@ public class NexusModsLibrary
     private readonly IConnection _connection;
     private readonly INexusApiClient _apiClient;
     private readonly NexusGraphQLClient _gqlClient;
+    private readonly IImageStore _imageStore;
+    private readonly HttpClient _httpClient;
     
     /// <summary>
     /// Constructor.
@@ -31,6 +34,8 @@ public class NexusModsLibrary
         _connection = serviceProvider.GetRequiredService<IConnection>();
         _apiClient = serviceProvider.GetRequiredService<INexusApiClient>();
         _gqlClient = serviceProvider.GetRequiredService<NexusGraphQLClient>();
+        _imageStore = serviceProvider.GetRequiredService<IImageStore>();
+        _httpClient = serviceProvider.GetRequiredService<HttpClient>();
     }
 
     public async Task<NexusModsModPageMetadata.ReadOnly> GetOrAddModPage(
@@ -61,10 +66,29 @@ public class NexusModsLibrary
             {
                 newModPage.ThumbnailUri = thumbnailUri;
             }
+
+            var storedImage = await DownloadThumbnail(thumbnailUri, fullSizedPictureUri, tx, cancellationToken);
+            if (storedImage is not null)
+            {
+                newModPage.ThumbnailId = storedImage.StoredImageId;
+            }
         }
 
         var txResults = await tx.Commit();
         return txResults.Remap(newModPage);
+    }
+
+    private async ValueTask<StoredImage.New?> DownloadThumbnail(Uri? thumbnailUri, Uri? fullSizedPictureUri, ITransaction tx, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await using var stream = await _httpClient.GetStreamAsync(uri, cancellationToken: cancellationToken);
+            return _imageStore.CreateStoredImage(tx, stream);
+        }
+        catch (Exception)
+        {
+            return null;
+        }
     }
 
     /// <summary>

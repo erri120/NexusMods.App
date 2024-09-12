@@ -17,4 +17,6 @@ public interface IImageStore
     [MustDisposeResource] Lifetime<Bitmap>? Get(OneOf<StoredImageId, StoredImage.ReadOnly> input);
 
     StoredImage.New CreateStoredImage(ITransaction transaction, Bitmap bitmap);
+
+    StoredImage.New CreateStoredImage(ITransaction transaction, Stream stream);
 }

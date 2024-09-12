@@ -1,4 +1,5 @@
 using JetBrains.Annotations;
+using NexusMods.Abstractions.Media;
 using NexusMods.Abstractions.MnemonicDB.Attributes;
 using NexusMods.Abstractions.NexusWebApi.Types;
 using NexusMods.Abstractions.Telemetry;
@@ -39,6 +40,11 @@ public partial class NexusModsModPageMetadata : IModelDefinition
     /// Uri for the thumbnail of the full sized picture.
     /// </summary>
     public static readonly UriAttribute ThumbnailUri = new(Namespace, nameof(ThumbnailUri)) { IsOptional = true };
+
+    /// <summary>
+    /// Thumbnail image.
+    /// </summary>
+    public static readonly ReferenceAttribute<StoredImage> Thumbnail = new(Namespace, nameof(Thumbnail)) { IsOptional = true };
 
     /// <summary>
     /// Back-reference to all files from this page.

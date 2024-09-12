@@ -52,6 +52,12 @@ public sealed class ImageStore : IImageStore, IDisposable
     /// <inheritdoc/>
     StoredImage.New IImageStore.CreateStoredImage(ITransaction transaction, Bitmap bitmap) => CreateStoredImage(transaction, bitmap);
 
+    public StoredImage.New CreateStoredImage(ITransaction transaction, Stream stream)
+    {
+        var bitmap = new Bitmap(stream: stream);
+        return CreateStoredImage(transaction, bitmap);
+    }
+
     public static StoredImage.New CreateStoredImage(ITransaction transaction, Bitmap bitmap)
     {
         var metadata = ToMetadata(bitmap);
