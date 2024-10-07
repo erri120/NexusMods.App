@@ -1,0 +1,100 @@
+<reactiveui:ReactiveUserControl
+    x:TypeArguments="local:ITreeTestingViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:reactiveui="http://reactiveui.net"
+    xmlns:local="clr-namespace:NexusMods.App.UI.Controls"
+    mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+    x:Class="NexusMods.App.UI.Controls.TreeTesting">
+
+    <Design.DataContext>
+        <local:TreeTestingViewModel/>
+    </Design.DataContext>
+
+    <TreeDataGrid x:Name="TreeDataGrid">
+        <TreeDataGrid.Styles>
+            <Style Selector="TreeDataGridTemplateCell Panel.FallbackControl > TextBlock">
+                <Setter Property="Background" Value="Aqua"/>
+                <Setter Property="Foreground" Value="Black"/>
+                <Setter Property="FontSize" Value="20"/>
+            </Style>
+            <Style Selector="TreeDataGridTemplateCell Panel.ModelType1Control > TextBlock">
+                <Setter Property="Background" Value="Red"/>
+                <Setter Property="Foreground" Value="Black"/>
+                <Setter Property="FontSize" Value="20"/>
+            </Style>
+            <Style Selector="TreeDataGridTemplateCell Panel.ModelType2Control > TextBlock">
+                <Setter Property="Background" Value="Fuchsia"/>
+                <Setter Property="Foreground" Value="Black"/>
+                <Setter Property="FontSize" Value="20"/>
+            </Style>
+        </TreeDataGrid.Styles>
+
+        <TreeDataGrid.Resources>
+            <DataTemplate x:Key="OtherTemplate" DataType="{x:Type local:IModelType}">
+                <ContentControl Content="{CompiledBinding}">
+                    <ContentControl.DataTemplates>
+                        <DataTemplate DataType="{x:Type local:ModelType1}">
+                            <Panel Classes="ModelType1Control">
+                                <TextBlock Text="I'm type 1" />
+                            </Panel>
+                        </DataTemplate>
+
+                        <DataTemplate DataType="{x:Type local:ModelType2}">
+                            <Panel Classes="ModelType2Control">
+                                <TextBlock Text="I'm type 2" />
+                            </Panel>
+                        </DataTemplate>
+
+                        <DataTemplate DataType="{x:Type local:IModelType}">
+                            <Panel Classes="FallbackControl">
+                                <TextBlock Text="I'm a fallback" />
+                            </Panel>
+                        </DataTemplate>
+                    </ContentControl.DataTemplates>
+                </ContentControl>
+
+            </DataTemplate>
+
+            <local:MyTemplate x:Key="MyTemplateKey">
+                <local:MyTemplate.FallbackTemplate>
+                    <DataTemplate DataType="{x:Type local:IModelType}">
+                        <Panel Classes="FallbackControl">
+                            <TextBlock Text="I'm a fallback" />
+                        </Panel>
+                    </DataTemplate>
+                </local:MyTemplate.FallbackTemplate>
+
+                <DataTemplate x:Key="{x:Type local:ModelType1}" DataType="{x:Type local:ModelType1}">
+                    <Panel Classes="ModelType1Control">
+                        <TextBlock Text="I'm type 1" />
+                    </Panel>
+                </DataTemplate>
+                <DataTemplate x:Key="{x:Type local:ModelType2}" DataType="{x:Type local:ModelType2}">
+                    <Panel Classes="ModelType2Control">
+                        <TextBlock Text="I'm type 2" />
+                    </Panel>
+                </DataTemplate>
+            </local:MyTemplate>
+
+            <DataTemplate x:Key="FallbackThingy" DataType="{x:Type local:IModelType}">
+                <Panel Classes="FallbackControl">
+                    <TextBlock Text="I'm a fallback" />
+                </Panel>
+            </DataTemplate>
+            <DataTemplate x:Key="Thing1" DataType="{x:Type local:ModelType1}">
+                <Panel Classes="ModelType1Control">
+                    <TextBlock Text="I'm type 1" />
+                </Panel>
+            </DataTemplate>
+            <DataTemplate x:Key="Thing2" DataType="{x:Type local:ModelType2}">
+                <Panel Classes="ModelType2Control">
+                    <TextBlock Text="I'm type 2" />
+                </Panel>
+            </DataTemplate>
+        </TreeDataGrid.Resources>
+    </TreeDataGrid>
+
+</reactiveui:ReactiveUserControl>
