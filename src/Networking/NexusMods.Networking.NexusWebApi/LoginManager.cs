@@ -33,9 +33,10 @@ public sealed class LoginManager : IDisposable, ILoginManager
     /// <inheritdoc/>
     public Observable<UserInfo?> UserInfoObservable => _userInfo;
 
-    private readonly IDisposable _observeDatomDisposable;
+    /// <inheritdoc/>
+    public UserInfo? UserInfo { get; private set; }
 
-    public bool IsPremium { get; private set; }
+    private readonly IDisposable _observeDatomDisposable;
 
     /// <summary>
     /// Constructor.
@@ -67,13 +68,13 @@ public sealed class LoginManager : IDisposable, ILoginManager
                 if (!hasValue)
                 {
                     _userInfo.OnNext(value: null);
-                    IsPremium = false;
+                    UserInfo = null;
                 }
                 else
                 {
                     var userInfo = await Verify(cancellationToken);
                     _userInfo.OnNext(userInfo);
-                    IsPremium = userInfo?.IsPremium ?? false;
+                    UserInfo = userInfo;
                 }
             }, awaitOperation: AwaitOperation.Sequential, configureAwait: false);
     }

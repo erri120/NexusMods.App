@@ -1,0 +1,5 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\NexusMods.Telemetry\NexusMods.Telemetry.csproj" />
+  </ItemGroup>
+</Project>

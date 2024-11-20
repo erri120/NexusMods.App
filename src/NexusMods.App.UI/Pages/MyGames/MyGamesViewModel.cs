@@ -29,6 +29,7 @@ using DynamicData.Aggregation;
 using NexusMods.App.UI.Overlays;
 using NexusMods.App.UI.Overlays.AlphaWarning;
 using NexusMods.CrossPlatform.Process;
+using NexusMods.Telemetry;
 
 namespace NexusMods.App.UI.Pages.MyGames;
 
@@ -101,6 +102,8 @@ public class MyGamesViewModel : APageViewModel<IMyGamesViewModel>, IMyGamesViewM
                                     vm.State = GameWidgetState.AddingGame;
                                     await Task.Run(async () => await ManageGame(installation));
                                     vm.State = GameWidgetState.ManagedGame;
+
+                                    Tracking.CreateEvent(UIEvents.ManageGame, new EventMetadata(installation.Game.Name));
                                 }
                             );
 
