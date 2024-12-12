@@ -120,27 +120,6 @@ public abstract class AGame : IGame
         _installations = null;
     }
 
-    private List<GameInstallation> GetInstallations()
-    {
-        return _gameLocators
-            .SelectMany(locator => locator.Find(this), (locator, installation) =>
-            {
-                var locations = GetLocations(installation.Path.FileSystem, installation);
-                return new GameInstallation
-                {
-                    Game = this,
-                    LocationsRegister = new GameLocationsRegister(new Dictionary<LocationId, AbsolutePath>(locations)),
-                    InstallDestinations = GetInstallDestinations(locations),
-                    Version = installation.Version ?? GetVersion(installation),
-                    Store = installation.Store,
-                    LocatorResultMetadata = installation.Metadata,
-                    Locator = locator,
-                };
-            })
-            .DistinctBy(g => g.LocationsRegister[LocationId.Game])
-            .ToList();
-    }
-
     /// <summary>
     /// Returns the locations of known game elements, such as save folder, etc.
     /// </summary>

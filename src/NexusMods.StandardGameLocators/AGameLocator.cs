@@ -1,15 +1,8 @@
 using GameFinder.Common;
-using GameFinder.StoreHandlers.EADesktop;
-using GameFinder.StoreHandlers.EGS;
-using GameFinder.StoreHandlers.GOG;
-using GameFinder.StoreHandlers.Origin;
-using GameFinder.StoreHandlers.Steam;
-using GameFinder.StoreHandlers.Xbox;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NexusMods.Abstractions.GameLocators;
 using NexusMods.Abstractions.GameLocators.Stores.Steam;
-using NexusMods.Abstractions.Games;
 using NexusMods.Paths;
 using IGame = NexusMods.Abstractions.Games.IGame;
 
@@ -18,7 +11,7 @@ namespace NexusMods.StandardGameLocators;
 /// <summary>
 /// Base class for an individual service used to locate installed games.
 /// </summary>
-/// <typeparam name="TGameType">The underlying game type library which maps to the <see cref="GameFinder"/> library. e.g. <see cref="SteamGame"/>.</typeparam>
+/// <typeparam name="TGameType">The underlying game type library which maps to the <see cref="GameFinder"/> library.</typeparam>
 /// <typeparam name="TId">Unique identifier used by the store for the games.</typeparam>
 /// <typeparam name="TGame">Implementation of <see cref="IGame"/> such as <see cref="ISteamGame"/> that allows us to retrieve info about the game.</typeparam>
 /// <typeparam name="TParent"></typeparam>
@@ -31,7 +24,6 @@ public abstract class AGameLocator<TGameType, TId, TGame, TParent> : IGameLocato
     private readonly ILogger _logger;
 
     private readonly AHandler<TGameType, TId> _handler;
-    private IReadOnlyDictionary<TId, TGameType>? _cachedGames;
 
     /// <summary>
     /// Constructor.
@@ -53,50 +45,36 @@ public abstract class AGameLocator<TGameType, TId, TGame, TParent> : IGameLocato
     /// <returns>List of found game installations.</returns>
     public IEnumerable<GameLocatorResult> Find(ILocatableGame game)
     {
-        if (game is not TGame tg) yield break;
+        if (game is not TGame) yield break;
 
-        if (_cachedGames is null)
+        var games = _handler.FindAllGamesById(out var errors);
+        if (errors.Length != 0)
         {
-            _cachedGames = _handler.FindAllGamesById(out var errors);
-            if (errors.Any())
-            {
-                foreach (var error in errors)
-                    _logger.LogError("While looking for games: {Error}", error);
-            }
-
-#if DEBUG
-            // Temporary hack to make it easy for contributors. To be removed in the future..
-            foreach (var cachedGame in _cachedGames)
-            {
-                switch (cachedGame.Value)
-                {
-                    case XboxGame xb:
-                        _logger.LogDebug($"Found Xbox Game: {xb.Id}, {xb.DisplayName}");
-                        break;
-                    case SteamGame st:
-                        _logger.LogDebug($"Found Steam Game: {st.AppId}, {st.Name}");
-                        break;
-                    case EGSGame eg:
-                        _logger.LogDebug($"Found Epic Game: {eg.CatalogItemId}, {eg.DisplayName}");
-                        break;
-                    case GOGGame gog:
-                        _logger.LogDebug($"Found GOG Galaxy Game: {gog.Id}, {gog.Name}");
-                        break;
-                    case OriginGame og:
-                        _logger.LogDebug($"Found Origin Game: {og.Id}, {og.InstallPath}");
-                        break;
-                    case EADesktopGame ea:
-                        _logger.LogDebug($"Found EA Desktop Game: {ea.EADesktopGameId}, {ea.BaseInstallPath}");
-                        break;
-                }
-            }
-#endif
+            foreach (var error in errors) _logger.LogError("While looking for games: {Error}", error);
         }
 
-        foreach (var id in Ids(tg))
+        foreach (var kv in games)
         {
-            if (!_cachedGames.TryGetValue(id, out var found)) continue;
-            yield return new GameLocatorResult(Path(found), GetMappedFileSystem(found), Store, CreateMetadata(found));
+            var (id, value) = kv;
+            _logger.LogInformation("Found game {Type}: {Value} ({Id})", value.GetType().Name, value, id);
+            yield return new GameLocatorResult(Path(value), GetMappedFileSystem(value), Store, CreateMetadata(value));
+        }
+    }
+
+    /// <inheritdoc/>
+    public IEnumerable<GameLocatorResult> FindAll()
+    {
+        var games = _handler.FindAllGamesById(out var errors);
+        if (errors.Length != 0)
+        {
+            foreach (var error in errors) _logger.LogError("While looking for games: {Error}", error);
+        }
+
+        foreach (var kv in games)
+        {
+            var (id, value) = kv;
+            _logger.LogInformation("Found game {Type}: {Value} ({Id})", value.GetType().Name, value, id);
+            yield return new GameLocatorResult(Path(value), GetMappedFileSystem(value), Store, CreateMetadata(value));
         }
     }
 

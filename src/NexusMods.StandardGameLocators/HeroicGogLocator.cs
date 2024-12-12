@@ -13,9 +13,7 @@ namespace NexusMods.StandardGameLocators;
 public class HeroicGogLocator : IGameLocator
 {
     private readonly ILogger _logger;
-
     private readonly HeroicGOGHandler _handler;
-    private IReadOnlyDictionary<GOGGameId, GOGGame>? _cachedGames;
 
     /// <summary>
     /// Constructor.
@@ -29,21 +27,23 @@ public class HeroicGogLocator : IGameLocator
     /// <inheritdoc/>
     public IEnumerable<GameLocatorResult> Find(ILocatableGame game)
     {
-        if (game is not IGogGame tg) yield break;
+        if (game is not IGogGame gogGame) yield break;
 
-        if (_cachedGames is null)
+        var games = _handler.FindAllGamesById(out var errors);
+        if (errors.Length != 0)
         {
-            _cachedGames = _handler.FindAllGamesById(out var errors);
-            if (errors.Length != 0)
-            {
-                foreach (var error in errors)
-                    _logger.LogError("While looking for games: {Error}", error);
-            }
+            foreach (var error in errors) _logger.LogError("While looking for games: {Error}", error);
         }
 
-        foreach (var id in tg.GogIds)
+        foreach (var kv in games)
         {
-            if (!_cachedGames.TryGetValue(GOGGameId.From(id), out var found)) continue;
+            var (id, value) = kv;
+            _logger.LogInformation("Found Heroic GOG game: {Value} ({Id})", value, id);
+        }
+
+        foreach (var id in gogGame.GogIds)
+        {
+            if (!games.TryGetValue(GOGGameId.From(id), out var found)) continue;
             var fs = found.Path.FileSystem;
 
             if (found is HeroicGOGGame heroicGOGGame && heroicGOGGame.WinePrefixPath.DirectoryExists())
@@ -54,6 +54,34 @@ public class HeroicGogLocator : IGameLocator
             yield return new GameLocatorResult(found.Path, fs, GameStore.GOG, new HeroicGOGLocatorResultMetadata
             {
                 Id = id,
+            });
+        }
+    }
+
+    /// <inheritdoc/>
+    public IEnumerable<GameLocatorResult> FindAll()
+    {
+        var games = _handler.FindAllGamesById(out var errors);
+        if (errors.Length != 0)
+        {
+            foreach (var error in errors) _logger.LogError("While looking for games: {Error}", error);
+        }
+
+        foreach (var kv in games)
+        {
+            var (id, value) = kv;
+            _logger.LogInformation("Found Heroic GOG game: {Value} ({Id})", value, id);
+
+            var fs = value.Path.FileSystem;
+
+            if (value is HeroicGOGGame heroicGOGGame && heroicGOGGame.WinePrefixPath.DirectoryExists())
+            {
+                fs = heroicGOGGame.GetWinePrefix().CreateOverlayFileSystem(fs);
+            }
+
+            yield return new GameLocatorResult(value.Path, fs, GameStore.GOG, new HeroicGOGLocatorResultMetadata
+            {
+                Id = id.Value,
             });
         }
     }

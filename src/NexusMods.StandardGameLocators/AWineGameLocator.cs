@@ -17,8 +17,6 @@ public abstract class AWineGameLocator<TPrefix> : IGameLocator
     private readonly IWinePrefixManager<TPrefix> _winePrefixManager;
     private readonly WineStoreHandlerWrapper _storeHandlerWrapper;
 
-    private IReadOnlyList<GameFinder.Common.IGame>? _cachedGames;
-
     /// <summary>
     /// Constructor.
     /// </summary>
@@ -33,15 +31,23 @@ public abstract class AWineGameLocator<TPrefix> : IGameLocator
     /// <inheritdoc/>
     public IEnumerable<GameLocatorResult> Find(ILocatableGame game)
     {
-        _cachedGames ??= FindAllGames();
-
-        var foundGame = _storeHandlerWrapper.FindMatchingGame(_cachedGames, game);
-        if (foundGame is not null) yield return foundGame;
+        yield break;
+        // var games = FindAllGames();
+        //
+        // var foundGame = _storeHandlerWrapper.FindMatchingGame(games, game);
+        // if (foundGame is not null) yield return foundGame;
     }
 
-    private IReadOnlyList<GameFinder.Common.IGame> FindAllGames()
+    /// <inheritdoc/>
+    public IEnumerable<GameLocatorResult> FindAll()
     {
-        var results = new List<GameFinder.Common.IGame>();
+        var games = FindAllGames();
+        return games;
+    }
+
+    private IReadOnlyList<GameLocatorResult> FindAllGames()
+    {
+        var results = new List<GameLocatorResult>();
 
         foreach (var res in _winePrefixManager.FindPrefixes())
         {

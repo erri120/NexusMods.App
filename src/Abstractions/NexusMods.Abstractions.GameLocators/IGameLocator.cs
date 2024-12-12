@@ -11,4 +11,11 @@ public interface IGameLocator
     /// <param name="game">The game to find the location of.</param>
     /// <returns>Location of the game.</returns>
     public IEnumerable<GameLocatorResult> Find(ILocatableGame game);
+
+    /// <summary>
+    /// Finds all games.
+    /// </summary>
+    public IEnumerable<GameLocatorResult> FindAll();
+
+    public bool Matches(GameLocatorResult result, ILocatableGame game);
 }

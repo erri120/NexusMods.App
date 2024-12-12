@@ -19,7 +19,6 @@ public class ManuallyAddedLocator : IGameLocator
     /// <summary>
     /// DI Constructor
     /// </summary>
-    /// <param name="provider"></param>
     public ManuallyAddedLocator(IServiceProvider provider, IFileSystem fileSystem)
     {
         _provider = provider;
@@ -73,6 +72,19 @@ public class ManuallyAddedLocator : IGameLocator
         var games = ManuallyAddedGame.FindByGameId(_conn.Value.Db, game.GameId)
             .Select(g => new GameLocatorResult(_fileSystem.FromUnsanitizedFullPath(g.Path), _fileSystem,
                 GameStore.ManuallyAdded, g, Version.Parse(g.Version)));
+        return games;
+    }
+
+    /// <inheritdoc/>
+    public IEnumerable<GameLocatorResult> FindAll()
+    {
+        var games = ManuallyAddedGame.All(_conn.Value.Db).Select(game => new GameLocatorResult(
+            Path: _fileSystem.FromUnsanitizedFullPath(game.Path),
+            GameFileSystem: _fileSystem,
+            Store: GameStore.ManuallyAdded,
+            Metadata: game)
+        ).ToArray();
+
         return games;
     }
 }

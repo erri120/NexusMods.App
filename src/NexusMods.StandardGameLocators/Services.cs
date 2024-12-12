@@ -101,27 +101,28 @@ public static class Services
 
                 services.AddSingleton(provider => new WineStoreHandlerWrapper(
                     provider.GetRequiredService<IFileSystem>(),
-                    new WineStoreHandlerWrapper.CreateHandler[]
-                    {
-                        (_, wineRegistry, wineFileSystem) => new GOGHandler(wineRegistry, wineFileSystem),
-                        (_, wineRegistry, wineFileSystem) => new EGSHandler(wineRegistry, wineFileSystem),
-                        (_, _, wineFileSystem) => new OriginHandler(wineFileSystem),
-                    },
-                    new[]
-                    {
-                        CreateDelegateFor<GOGGame, IGogGame>(
-                            (foundGame, requestedGame) => requestedGame.GogIds.Any(x => foundGame.Id.Equals(x)),
-                            game => new GameLocatorResult(game.Path, game.Path.FileSystem, GameStore.GOG, GogLocator.CreateMetadataCore(game))
-                        ),
-                        CreateDelegateFor<EGSGame, IEpicGame>(
-                            (foundGame, requestedGame) => requestedGame.EpicCatalogItemId.Any(x => foundGame.CatalogItemId.Equals(x)),
-                            game => new GameLocatorResult(game.InstallLocation, game.InstallLocation.FileSystem, GameStore.EGS, EpicLocator.CreateMetadataCore(game))
-                        ),
-                        CreateDelegateFor<OriginGame, IOriginGame>(
-                            (foundGame, requestedGame) => requestedGame.OriginGameIds.Any(x => foundGame.Id.Equals(x)),
-                            game => new GameLocatorResult(game.InstallPath, game.InstallPath.FileSystem, GameStore.Origin, OriginLocator.CreateMetadataCore(game))
-                        ),
-                    }
+                    [
+                        (_, wineRegistry, wineFileSystem) => (
+                            new GOGHandler(wineRegistry, wineFileSystem),
+                            CreateDelegateFor<GOGGame, IGogGame>(
+                                game => new GameLocatorResult(game.Path, game.Path.FileSystem, GameStore.GOG, GogLocator.CreateMetadataCore(game))
+                            )),
+                        (_, wineRegistry, wineFileSystem) => (
+                            new EGSHandler(wineRegistry, wineFileSystem),
+                            CreateDelegateFor<EGSGame, IEpicGame>(
+                                game => new GameLocatorResult(game.InstallLocation, game.InstallLocation.FileSystem, GameStore.EGS, EpicLocator.CreateMetadataCore(game))
+                            )),
+                        (_, _, wineFileSystem) => (
+                            new OriginHandler(wineFileSystem),
+                            CreateDelegateFor<OriginGame, IOriginGame>(
+                                game => new GameLocatorResult(game.InstallPath, game.InstallPath.FileSystem, GameStore.Origin, OriginLocator.CreateMetadataCore(game))
+                            )),
+                    ],
+                    [
+                        CreateMatches<GOGLocatorResultMetadata, IGogGame>(static (metadata, game) => game.GogIds.Contains(metadata.Id)),
+                        CreateMatches<EpicLocatorResultMetadata, IEpicGame>(static (metadata, game) => game.EpicCatalogItemId.Contains(metadata.CatalogItemId, StringComparer.OrdinalIgnoreCase)),
+                        CreateMatches<OriginLocatorResultMetadata, IOriginGame>(static (metadata, game) => game.OriginGameIds.Contains(metadata.Id, StringComparer.OrdinalIgnoreCase)),
+                    ]
                 ));
             },
         onOSX: () =>
@@ -132,17 +133,27 @@ public static class Services
         return services;
     }
 
-    private static WineStoreHandlerWrapper.Matches CreateDelegateFor<TFoundGame, TRequestedGame>(
-        Func<TFoundGame, TRequestedGame, bool> matches,
+    private static WineStoreHandlerWrapper.Matches CreateMatches<TMetadata, TGame>(
+        Func<TMetadata, TGame, bool> matcher)
+        where TMetadata : IGameLocatorResultMetadata
+        where TGame : ILocatableGame
+    {
+        return (foundGame, requestedGame) =>
+        {
+            if (foundGame.Metadata is not TMetadata metadata) return false;
+            if (requestedGame is not TGame game) return false;
+            return matcher(metadata, game);
+        };
+    }
+
+    private static WineStoreHandlerWrapper.ToResult CreateDelegateFor<TFoundGame, TRequestedGame>(
         Func<TFoundGame, GameLocatorResult> createResult)
         where TFoundGame : GameFinder.Common.IGame
         where TRequestedGame : ILocatableGame
     {
-        return (foundGame, requestedGame) =>
+        return game =>
         {
-            if (foundGame is not TFoundGame typedFoundGame) return null;
-            if (requestedGame is not TRequestedGame typedRequestedGame) return null;
-            if (!matches(typedFoundGame, typedRequestedGame)) return null;
+            if (game is not TFoundGame typedFoundGame) throw new NotSupportedException();
             return createResult(typedFoundGame);
         };
     }

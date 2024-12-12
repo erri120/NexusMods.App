@@ -144,28 +144,30 @@ public class GameRegistry : IGameRegistry, IHostedService
     /// </summary>
     private async IAsyncEnumerable<GameInstallation> FindInstallations()
     {
-        foreach (var game in _games)
+        foreach (var locator in _locators)
         {
-            foreach (var locator in _locators)
+            using var enumerator = locator.FindAll().GetEnumerator();
+            while (true)
             {
-                using var enumerator = locator.Find(game).GetEnumerator();
-                while (true)
+                GameLocatorResult result;
+
+                try
                 {
-                    Task<GameInstallation> value;
+                    if (!enumerator.MoveNext()) break;
+                    result = enumerator.Current;
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e, "Exception in locator `{Type}`", locator.GetType());
+                    continue;
+                }
 
-                    try
+                foreach (var game in _games)
+                {
+                    if (locator.Matches(result, game))
                     {
-                        if (!enumerator.MoveNext()) break;
-                        var result = enumerator.Current;
-                        value = Register(game, result, locator);
+                        yield return await Register(game, result, locator);
                     }
-                    catch (Exception e)
-                    {
-                        _logger.LogError(e, "Exception in locator");
-                        break;
-                    }
-
-                    yield return await value;
                 }
             }
         }
