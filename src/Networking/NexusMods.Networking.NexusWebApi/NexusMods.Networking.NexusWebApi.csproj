@@ -6,6 +6,7 @@
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
         <PackageReference Include="Microsoft.AspNetCore.WebUtilities" />
         <PackageReference Include="StrawberryShake.Server" />
+        <PackageReference Include="BitFaster.Caching"/>
     </ItemGroup>
     
     <ItemGroup>

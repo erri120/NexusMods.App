@@ -1,4 +1,6 @@
 using System.Text.Json;
+using BitFaster.Caching;
+using BitFaster.Caching.Lru;
 using DynamicData.Kernel;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
@@ -37,6 +39,8 @@ public partial class NexusModsLibrary
     private readonly JsonSerializerOptions _jsonSerializerOptions;
     private readonly IGameDomainToGameIdMappingCache _mappingCache;
 
+    private readonly IAsyncCache<CollectionMetadataId, RevisionNumber[]> _revisionUpdateCache;
+
     /// <summary>
     /// Constructor.
     /// </summary>
@@ -51,6 +55,12 @@ public partial class NexusModsLibrary
         _fileStore = serviceProvider.GetRequiredService<IFileStore>();
         _jsonSerializerOptions = serviceProvider.GetRequiredService<JsonSerializerOptions>();
         _mappingCache = serviceProvider.GetRequiredService<IGameDomainToGameIdMappingCache>();
+
+        _revisionUpdateCache = new ConcurrentLruBuilder<CollectionMetadataId, RevisionNumber[]>()
+            .WithExpireAfterWrite(TimeSpan.FromMinutes(10))
+            .AsAsyncCache()
+            .WithAtomicGetOrAdd()
+            .Build();
     }
 
     public async Task<NexusModsModPageMetadata.ReadOnly> GetOrAddModPage(
@@ -114,8 +124,7 @@ public partial class NexusModsLibrary
     }
 
     public async Task<Uri> GetDownloadUri(
-        NexusModsFileMetadata.ReadOnly file,
-        Optional<(NXMKey, DateTime)> nxmData,
+        NexusModsFileMetadata.ReadOnly file, DynamicData.Kernel.Optional<(NXMKey, DateTime)> nxmData,
         CancellationToken cancellationToken = default)
     {
         Abstractions.NexusWebApi.DTOs.Response<DownloadLink[]> links;
@@ -171,8 +180,7 @@ public partial class NexusModsLibrary
         AbsolutePath destination,
         GameId gameId,
         ModId modId,
-        FileId fileId,
-        Optional<(NXMKey, DateTime)> nxmData = default,
+        FileId fileId, DynamicData.Kernel.Optional<(NXMKey, DateTime)> nxmData = default,
         CancellationToken cancellationToken = default)
     {
         var modPage = await GetOrAddModPage(modId, gameId, cancellationToken);
@@ -191,7 +199,7 @@ public partial class NexusModsLibrary
         NexusModsFileMetadata.ReadOnly fileMetadata,
         CancellationToken cancellationToken = default)
     {
-        var uri = await GetDownloadUri(fileMetadata, Optional<(NXMKey, DateTime)>.None, cancellationToken: cancellationToken);
+        var uri = await GetDownloadUri(fileMetadata, DynamicData.Kernel.Optional<(NXMKey, DateTime)>.None, cancellationToken: cancellationToken);
 
         var httpJob = HttpDownloadJob.Create(_serviceProvider, uri, fileMetadata.ModPage.GetUri(), destination);
         var nexusJob = NexusModsDownloadJob.Create(_serviceProvider, httpJob, fileMetadata);

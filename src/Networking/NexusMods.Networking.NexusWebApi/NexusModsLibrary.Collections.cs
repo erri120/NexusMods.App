@@ -9,7 +9,6 @@ using NexusMods.Abstractions.NexusWebApi.Types.V2;
 using NexusMods.Abstractions.NexusWebApi.Types.V2.Uid;
 using NexusMods.Extensions.BCL;
 using NexusMods.MnemonicDB.Abstractions;
-using NexusMods.MnemonicDB.Abstractions.TxFunctions;
 using NexusMods.Networking.NexusWebApi.Extensions;
 using NexusMods.Paths;
 
@@ -80,29 +79,33 @@ public partial class NexusModsLibrary
     /// <summary>
     /// Gets all revision numbers for the given collection in descending order.
     /// </summary>
-    public async ValueTask<RevisionNumber[]> GetAllRevisionNumbers(
+    public ValueTask<RevisionNumber[]> GetAllRevisionNumbers(
         CollectionMetadata.ReadOnly collection,
         CancellationToken cancellationToken)
     {
-        var gameDomain = await _mappingCache.TryGetDomainAsync(collection.GameId, cancellationToken);
+        return _revisionUpdateCache.GetOrAddAsync(collection.CollectionMetadataId, async static (_, state) =>
+        {
+            var (self, collection) = state;
 
-        var apiResult = await _gqlClient.CollectionRevisionNumbers.ExecuteAsync(
-            slug: collection.Slug.Value,
-            domainName: gameDomain.Value.Value,
-            viewAdultContent: true,
-            cancellationToken: cancellationToken
-        );
+            var gameDomain = await self._mappingCache.TryGetDomainAsync(collection.GameId, cancellationToken: CancellationToken.None);
+            var apiResult = await self._gqlClient.CollectionRevisionNumbers.ExecuteAsync(
+                slug: collection.Slug.Value,
+                domainName: gameDomain.Value.Value,
+                viewAdultContent: true,
+                cancellationToken: CancellationToken.None
+            );
 
-        var revisions = apiResult.Data?.Collection.Revisions;
-        if (revisions is null) throw new NotSupportedException($"API call returned no data for collection slug `{collection.Slug}`");
+            var revisions = apiResult.Data?.Collection.Revisions;
+            if (revisions is null) throw new NotSupportedException($"API call returned no data for collection slug `{collection.Slug}`");
 
-        var revisionNumbers = revisions
-            .Select(static x => x.RevisionNumber)
-            .OrderDescending()
-            .Select(static number => RevisionNumber.From((ulong)number))
-            .ToArray();
+            var revisionNumbers = revisions
+                .Select(static x => x.RevisionNumber)
+                .OrderDescending()
+                .Select(static number => RevisionNumber.From((ulong)number))
+                .ToArray();
 
-        return revisionNumbers;
+            return revisionNumbers;
+        }, (this, collection));
     }
 
     private static ResolvedEntitiesLookup ResolveModFiles(
