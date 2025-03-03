@@ -26,4 +26,10 @@ public interface IJobTask<out TJobType, TResultType>
     /// Returns the result of the job, throws if the job is not completed.
     /// </summary>
     public TResultType Result { get; }
+
+    /// <inheritdoc cref="IJobGroup.Cancel"/>
+    void Cancel();
+
+    /// <inheritdoc cref="IJobGroup.CancelAsync"/>
+    Task CancelAsync();
 }

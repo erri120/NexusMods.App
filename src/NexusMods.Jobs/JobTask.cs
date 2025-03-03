@@ -17,4 +17,7 @@ public class JobTask<TJobDefinition, TJobResult> : IJobTask<TJobDefinition, TJob
         return _job.WaitForResult().GetAwaiter();
     }
     public TJobResult Result => _job.Result;
+
+    public void Cancel() => _job.Group.Cancel();
+    public Task CancelAsync() => _job.Group.CancelAsync();
 }

@@ -3,7 +3,16 @@ namespace NexusMods.Abstractions.Jobs;
 /// <summary>
 /// A group of jobs
 /// </summary>
-public interface IJobGroup : IReadOnlyCollection<IJob>
+public interface IJobGroup
 {
-    public CancellationToken CancellationToken { get; }
+    /// <summary>
+    /// Cancellation token.
+    /// </summary>
+    CancellationToken CancellationToken { get; }
+
+    /// <inheritdoc cref="CancellationTokenSource.Cancel()"/>
+    void Cancel();
+
+    /// <inheritdoc cref="CancellationTokenSource.CancelAsync()"/>
+    Task CancelAsync();
 }

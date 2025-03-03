@@ -55,6 +55,12 @@ public interface IJob
     /// Get the definition of the job
     /// </summary>
     public IJobDefinition Definition { get; }
+
+    /// <inheritdoc cref="IJobGroup.Cancel"/>
+    void Cancel() => Group.Cancel();
+
+    /// <inheritdoc cref="IJobGroup.CancelAsync"/>
+    Task CancelAsync() => Group.CancelAsync();
 }
 
 /// <summary>

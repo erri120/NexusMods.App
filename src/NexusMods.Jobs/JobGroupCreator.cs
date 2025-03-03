@@ -3,6 +3,7 @@ using NexusMods.Abstractions.Jobs;
 
 namespace NexusMods.Jobs;
 
+[UsedImplicitly]
 public sealed class JobGroupCreator
 {
     private static AsyncLocal<IJobGroup?> CurrentGroup { get; } = new();
@@ -11,23 +12,22 @@ public sealed class JobGroupCreator
     {
         return new JobGroupDisposable(monitor);
     }
-    
-    public struct JobGroupDisposable : IDisposable
+
+    public readonly struct JobGroupDisposable : IDisposable
     {
         private readonly IJobGroup? _previous;
 
         public JobGroupDisposable(JobMonitor monitor)
         {
             _previous = CurrentGroup.Value;
-            Group = _previous ?? new JobGroup(monitor);
+            Group = _previous ?? new JobGroup();
         }
-        
+
         public IJobGroup Group { get; }
-        
+
         public void Dispose()
         {
             CurrentGroup.Value = _previous;
         }
     }
-    
 }
