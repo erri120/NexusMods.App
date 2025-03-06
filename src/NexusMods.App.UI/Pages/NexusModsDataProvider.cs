@@ -34,6 +34,89 @@ public class NexusModsDataProvider : ILibraryDataProvider, ILoadoutDataProvider
         _thumbnailLoader = new Lazy<IResourceLoader<EntityId, Bitmap>>(() => ImagePipelines.GetModPageThumbnailPipeline(serviceProvider));
     }
 
+    private void Foo()
+    {
+        var cacheModPageToLibraryItems = new SourceCache<IGrouping<NexusModsLibraryItem.ReadOnly, EntityId, NexusModsModPageMetadataId>, NexusModsModPageMetadataId>(static grouping => grouping.Key);
+        var cacheAdapterModPageToLibraryItems = new SourceCacheAdapter<IGrouping<NexusModsLibraryItem.ReadOnly, EntityId, NexusModsModPageMetadataId>, NexusModsModPageMetadataId>(cacheModPageToLibraryItems);
+
+        var disposableModPageToLibraryItems = NexusModsLibraryItem
+            .ObserveAll(_connection)
+            .GroupWithImmutableState(groupSelectorKey: static libraryItem => libraryItem.ModPageMetadataId)
+            .Adapt(cacheAdapterModPageToLibraryItems)
+            .Subscribe();
+
+        var cacheLibraryItemToLoadoutItems = new SourceCache<IGrouping<LibraryLinkedLoadoutItem.ReadOnly, EntityId, LibraryItemId>, LibraryItemId>(static grouping => grouping.Key);
+        var cacheAdapterLibraryItemToLoadoutItems = new SourceCacheAdapter<IGrouping<LibraryLinkedLoadoutItem.ReadOnly, EntityId, LibraryItemId>, LibraryItemId>(cacheLibraryItemToLoadoutItems);
+
+        var disposableLibraryItemToLoadoutItems = LibraryLinkedLoadoutItem
+            .ObserveAll(_connection)
+            .GroupWithImmutableState(groupSelectorKey: static loadoutItem => loadoutItem.LibraryItemId)
+            .Adapt(cacheAdapterLibraryItemToLoadoutItems)
+            .Subscribe();
+
+        var cache = new SourceCache<IGroup<NexusModsLibraryItem.ReadOnly, EntityId, NexusModsModPageMetadataId>, NexusModsModPageMetadataId>(static group => group.Key);
+        var cacheAdapter = new SourceCacheAdapter<IGroup<NexusModsLibraryItem.ReadOnly, EntityId, NexusModsModPageMetadataId>, NexusModsModPageMetadataId>(cache);
+
+        var disposable = NexusModsLibraryItem
+            .ObserveAll(_connection)
+            .Group(groupSelectorKey: static libraryItem => libraryItem.ModPageMetadataId)
+            .Adapt(cacheAdapter)
+            .Subscribe();
+
+        NexusModsModPageMetadata
+            .ObserveAll(_connection)
+            .FilterOnObservable(modPage => GroupingCacheHasValues(cacheModPageToLibraryItems, modPage.NexusModsModPageMetadataId));
+
+        NexusModsModPageMetadata
+            .ObserveAll(_connection)
+            .FilterOnObservable(modPage => GroupCacheHasValues(cache, modPage.NexusModsModPageMetadataId))
+            .TransformImmutable(modPage =>
+            {
+                var libraryItemsObservable = cache
+                    .Watch(modPage.NexusModsModPageMetadataId)
+                    .SelectMany(change =>
+                    {
+                        if (change.Reason == ChangeReason.Add) return change.Current.Cache.Connect();
+                        return Observable.Empty<IChangeSet<NexusModsLibraryItem.ReadOnly, EntityId>>();
+                    });
+
+                return (modPage, observable: libraryItemsObservable);
+            });
+
+        return;
+
+        static IObservable<bool> GroupCacheHasValues<TObject, TKey, TGroupKey>(SourceCache<IGroup<TObject, TKey, TGroupKey>, TGroupKey> cache, TGroupKey groupKey)
+            where TObject : notnull
+            where TKey : notnull
+            where TGroupKey : notnull
+        {
+            return cache
+                .Watch(groupKey)
+                .SelectMany(change =>
+                {
+                    if (change.Reason == ChangeReason.Add) return change.Current.Cache.CountChanged.Select(static count => count > 0);
+                    return Observable.Return(false);
+                });
+        }
+
+        static IObservable<bool> GroupingCacheHasValues<TObject, TKey, TGroupKey>(SourceCache<IGrouping<TObject, TKey, TGroupKey>, TGroupKey> cache, TGroupKey groupKey)
+            where TObject : notnull
+            where TKey : notnull
+            where TGroupKey : notnull
+        {
+            return cache
+                .Watch(groupKey)
+                .Select(change =>
+                {
+                    return change.Reason switch
+                    {
+                        ChangeReason.Add or ChangeReason.Update or ChangeReason.Refresh => change.Current.Count > 0,
+                        _ => false,
+                    };
+                });
+        }
+    }
+
     private IObservable<IChangeSet<NexusModsModPageMetadata.ReadOnly, EntityId>> FilterLibraryItems(LibraryFilter libraryFilter)
     {
         return NexusModsModPageMetadata
