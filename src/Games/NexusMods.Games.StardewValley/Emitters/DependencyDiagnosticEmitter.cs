@@ -5,9 +5,11 @@ using Microsoft.Extensions.Logging;
 using NexusMods.Abstractions.Diagnostics;
 using NexusMods.Abstractions.Diagnostics.Emitters;
 using NexusMods.Abstractions.Diagnostics.References;
+using NexusMods.Abstractions.GameLocators;
 using NexusMods.Abstractions.Games;
 using NexusMods.Abstractions.Loadouts;
 using NexusMods.Abstractions.Loadouts.Extensions;
+using NexusMods.Abstractions.Loadouts.Synchronizers;
 using NexusMods.Abstractions.Resources;
 using NexusMods.Games.StardewValley.Models;
 using NexusMods.Games.StardewValley.WebAPI;
@@ -35,6 +37,11 @@ public class DependencyDiagnosticEmitter : ILoadoutDiagnosticEmitter
         _smapiWebApi = smapiWebApi;
         _os = os;
         _manifestPipeline = Pipelines.GetManifestPipeline(serviceProvider);
+    }
+
+    public async Task Foo(Loadout.ReadOnly loadout, Dictionary<GamePath, SyncNode> tree, CancellationToken cancellationToken)
+    {
+
     }
 
     public async IAsyncEnumerable<Diagnostic> Diagnose(Loadout.ReadOnly loadout, [EnumeratorCancellation] CancellationToken cancellationToken)
