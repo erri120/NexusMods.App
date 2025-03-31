@@ -288,7 +288,7 @@ public class InstallCollectionDownloadJob : IJobDefinitionWithStart<InstallColle
         {
             // Try and find the hash we are looking for
             if (!hashes.TryGetValue(pair.MD5, out var libraryItem))
-                throw new InvalidOperationException("The hash was not found in the archive.");
+                throw new InvalidOperationException($"The hash `{pair.MD5}` was not found in the archive of `{Item.Name}` (`{libraryFile.Hash}`)");
 
             // Map the file to the specific path
             _ = new LoadoutFile.New(tx, out var fileId)
