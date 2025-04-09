@@ -110,7 +110,9 @@ public static class Services
         }
         else
         {
-            services.AddFileSystem()
+            services
+                .AddFileSystem()
+                .AddSingleton<TimeProvider>(_ => TimeProvider.System)
                 .AddCrossPlatform()
                 .AddDefaultRenderers()
                 .AddSettingsManager()
