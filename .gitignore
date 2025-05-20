@@ -42,3 +42,5 @@ coverage.json
 
 # python virtual environment
 .venv
+
+flatpak-builder
