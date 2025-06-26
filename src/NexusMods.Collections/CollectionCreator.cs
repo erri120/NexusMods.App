@@ -124,16 +124,19 @@ public static class CollectionCreator
         using var tx = connection.BeginTransaction();
 
         CollectionMetadata.ReadOnly collection;
+        DateTimeOffset timestamp;
         if (group.TryGetAsManagedCollectionLoadoutGroup(out var managedCollectionLoadoutGroup))
         {
             collection = managedCollectionLoadoutGroup.Collection;
-            await nexusModsLibrary.UploadDraftRevision(collection, streamFactory, collectionManifest, cancellationToken);
+            timestamp = await nexusModsLibrary.UploadDraftRevision(collection, streamFactory, collectionManifest, cancellationToken);
         }
         else
         {
-            collection = await nexusModsLibrary.CreateCollection(streamFactory, collectionManifest, cancellationToken);
+            (collection, timestamp) = await nexusModsLibrary.CreateCollection(streamFactory, collectionManifest, cancellationToken);
             tx.Add(groupId, ManagedCollectionLoadoutGroup.Collection, collection);
         }
+
+        tx.Add(groupId, ManagedCollectionLoadoutGroup.UploadedAt, timestamp);
 
         await tx.Commit();
         return collection;

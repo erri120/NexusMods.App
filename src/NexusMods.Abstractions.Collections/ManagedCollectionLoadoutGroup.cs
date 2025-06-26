@@ -17,4 +17,9 @@ public partial class ManagedCollectionLoadoutGroup : IModelDefinition
     /// The collection.
     /// </summary>
     public static readonly ReferenceAttribute<CollectionMetadata> Collection = new(Namespace, nameof(Collection)) { IsIndexed = true };
+
+    /// <summary>
+    /// Timestamp of the last revision that was uploaded.
+    /// </summary>
+    public static readonly TimestampAttribute UploadedAt = new(Namespace, nameof(UploadedAt)) { IsOptional = true };
 }

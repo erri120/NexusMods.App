@@ -80,7 +80,7 @@ public partial class NexusModsLibrary
     /// <summary>
     /// Uploads a collection revision, either creating a new revision or updating an existing draft revision.
     /// </summary>
-    public async ValueTask UploadDraftRevision(
+    public async ValueTask<DateTimeOffset> UploadDraftRevision(
         CollectionMetadata.ReadOnly collection,
         IStreamFactory archiveStreamFactory,
         CollectionRoot collectionManifest,
@@ -100,12 +100,14 @@ public partial class NexusModsLibrary
 
         var data = result.Data?.CreateOrUpdateRevision!;
         if (!data.Success) throw new NotImplementedException();
+
+        return data.Revision.UpdatedAt;
     }
 
     /// <summary>
     /// Uploads a new collection to Nexus Mods and adds it to the app.
     /// </summary>
-    public async ValueTask<CollectionMetadata.ReadOnly> CreateCollection(
+    public async ValueTask<(CollectionMetadata.ReadOnly, DateTimeOffset)> CreateCollection(
         IStreamFactory archiveStreamFactory,
         CollectionRoot collectionManifest,
         CancellationToken cancellationToken)
@@ -131,7 +133,7 @@ public partial class NexusModsLibrary
         var commitResult = await tx.Commit();
 
         var collection = CollectionMetadata.Load(commitResult.Db, commitResult[collectionEntityId]);
-        return collection;
+        return (collection, data.Revision.UpdatedAt);
     }
 
     private static CollectionPayload ManifestToPayload(CollectionRoot manifest)

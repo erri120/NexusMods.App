@@ -39,6 +39,8 @@ fragment CollectionRevisionFragment on CollectionRevision {
     modCount
     status
     revisionStatus
+    createdAt
+    updatedAt
 
     modFiles {
         id,
@@ -94,6 +96,8 @@ fragment CollectionFragment on Collection {
         name
         domainName
     }
+    createdAt
+    updatedAt
 }
 
 fragment PresignedUrl on PresignedUrl {
