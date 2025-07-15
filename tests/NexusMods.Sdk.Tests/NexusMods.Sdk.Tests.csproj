@@ -13,4 +13,9 @@
     <ProjectReference Include="..\..\src\NexusMods.Sdk\NexusMods.Sdk.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Remove="wordlist4096.txt" />
+    <EmbeddedResource Include="wordlist4096.txt" />
+  </ItemGroup>
+
 </Project>
