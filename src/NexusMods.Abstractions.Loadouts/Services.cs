@@ -17,6 +17,7 @@ public static class Services
         return services
             .AddLoadoutModel()
             .AddLoadoutItemModel()
+            .AddPlaceholderLoadoutItemModel()
             .AddLoadoutItemGroupModel()
             .AddLoadoutGameFilesGroupModel()
             .AddLoadoutOverridesGroupModel()
