@@ -81,6 +81,7 @@ internal sealed class DiagnosticManager : IDiagnosticManager
         var diagnosticEmitters = loadout.InstallationInstance.GetGame().DiagnosticEmitters;
         var synchronizer = loadout.InstallationInstance.GetGame().Synchronizer;
         var syncTree = (await synchronizer.BuildSyncTree(loadout)).ToFrozenDictionary();
+        var state = new LoadoutStateForEmitters(loadout, syncTree);
 
         try
         {
@@ -92,7 +93,7 @@ internal sealed class DiagnosticManager : IDiagnosticManager
 
                 try
                 {
-                    await foreach (var diagnostic in emitter.Diagnose(loadout, syncTree, token))
+                    await foreach (var diagnostic in emitter.Diagnose(state, token))
                     {
                         lock(diagnostics)
                         {

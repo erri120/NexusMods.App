@@ -6,6 +6,9 @@ using NexusMods.Abstractions.Loadouts.Synchronizers;
 
 namespace NexusMods.Abstractions.Diagnostics.Emitters;
 
+[PublicAPI]
+public record LoadoutStateForEmitters(Loadout.ReadOnly Loadout, FrozenDictionary<GamePath, SyncNode> SyncTree);
+
 /// <summary>
 /// Interface for diagnostic emitters that run on the entire <see cref="Loadout"/>.
 /// </summary>
@@ -25,8 +28,8 @@ public interface ILoadoutDiagnosticEmitter : IDiagnosticEmitter
     /// <summary>
     /// Diagnoses a loadout and creates instances of <see cref="Diagnostic"/>.
     /// </summary>
-    IAsyncEnumerable<Diagnostic> Diagnose(Loadout.ReadOnly loadout, FrozenDictionary<GamePath, SyncNode> syncTree, CancellationToken cancellationToken)
+    IAsyncEnumerable<Diagnostic> Diagnose(LoadoutStateForEmitters loadoutState, CancellationToken cancellationToken)
     {
-        return Diagnose(loadout, cancellationToken);
+        return Diagnose(loadoutState.Loadout, cancellationToken);
     }
 }
