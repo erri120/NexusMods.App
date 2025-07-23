@@ -1,20 +1,28 @@
+using System.Collections.Frozen;
 using System.Runtime.CompilerServices;
 using NexusMods.Abstractions.Diagnostics;
 using NexusMods.Abstractions.Diagnostics.Emitters;
+using NexusMods.Abstractions.GameLocators;
 using NexusMods.Abstractions.Loadouts;
 using NexusMods.Abstractions.Loadouts.Extensions;
+using NexusMods.Abstractions.Loadouts.Synchronizers;
 using NexusMods.Games.StardewValley.Models;
 
 namespace NexusMods.Games.StardewValley.Emitters;
 
 public class MissingSMAPIEmitter : ILoadoutDiagnosticEmitter
 {
+    public IAsyncEnumerable<Diagnostic> Diagnose(Loadout.ReadOnly loadout, CancellationToken cancellationToken) => throw new NotSupportedException();
+
     public async IAsyncEnumerable<Diagnostic> Diagnose(
-        Loadout.ReadOnly loadout,
+        LoadoutStateForEmitters loadoutState,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         await Task.Yield();
 
+        var manifests = Queries.GetSMAPIManifests(loadoutState, onlyEnabled: true);
+
+        var loadout = loadoutState.Loadout;
         var numEnabledSMAPIManifests = SMAPIManifestLoadoutFile.GetAllInLoadout(loadout.Db, loadout, onlyEnabled: true).Count();
         if (numEnabledSMAPIManifests == 0) yield break;
 

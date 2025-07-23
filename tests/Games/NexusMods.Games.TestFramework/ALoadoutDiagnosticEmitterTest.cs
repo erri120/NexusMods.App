@@ -33,7 +33,7 @@ public class ALoadoutDiagnosticEmitterTest<TTest, TGame, TEmitter> : AIsolatedGa
     {
         var loadout = Loadout.Load(Connection.Db, loadoutId);
         var syncTree = (await Synchronizer.BuildSyncTree(loadout)).ToFrozenDictionary();
-        var state = new LoadoutStateForEmitters(loadout, syncTree);
+        var state = LoadoutStateForEmitters.Create(loadout, syncTree);
         return await Emitter.Diagnose(state, CancellationToken.None).ToArrayAsync();
     }
 

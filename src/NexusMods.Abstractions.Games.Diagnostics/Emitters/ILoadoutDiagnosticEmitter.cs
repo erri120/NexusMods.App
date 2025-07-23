@@ -1,13 +1,44 @@
 using System.Collections.Frozen;
+using System.Diagnostics;
 using JetBrains.Annotations;
 using NexusMods.Abstractions.GameLocators;
 using NexusMods.Abstractions.Loadouts;
 using NexusMods.Abstractions.Loadouts.Synchronizers;
+using NexusMods.MnemonicDB.Abstractions;
 
 namespace NexusMods.Abstractions.Diagnostics.Emitters;
 
 [PublicAPI]
-public record LoadoutStateForEmitters(Loadout.ReadOnly Loadout, FrozenDictionary<GamePath, SyncNode> SyncTree);
+public record LoadoutStateForEmitters(
+    Loadout.ReadOnly Loadout,
+    FrozenDictionary<GamePath, SyncNode> SyncTree,
+    GamePath[] GamePaths
+)
+{
+    public IDb Db => Loadout.Db;
+
+    public bool TryGetLoadoutItem(SyncNode syncNode, out LoadoutItem.ReadOnly loadoutItem)
+    {
+        loadoutItem = default(LoadoutItem.ReadOnly);
+        if (!syncNode.HaveLoadout) return false;
+
+        var syncNodePart = syncNode.Loadout;
+        if (!syncNodePart.HaveEntityId) return false;
+
+        var tmp = LoadoutItem.Load(Db, syncNodePart.EntityId);
+        if (!tmp.IsValid()) return false;
+
+        loadoutItem = tmp;
+        return true;
+    }
+
+    public static LoadoutStateForEmitters Create(Loadout.ReadOnly loadout, IReadOnlyDictionary<GamePath, SyncNode> syncTree)
+    {
+        var frozenSyncTree = syncTree.ToFrozenDictionary();
+        var gamePaths = syncTree.Select(static kv => kv.Key).OrderDescending().ToArray();
+        return new LoadoutStateForEmitters(loadout, frozenSyncTree, gamePaths);
+    }
+}
 
 /// <summary>
 /// Interface for diagnostic emitters that run on the entire <see cref="Loadout"/>.

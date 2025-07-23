@@ -81,7 +81,7 @@ internal sealed class DiagnosticManager : IDiagnosticManager
         var diagnosticEmitters = loadout.InstallationInstance.GetGame().DiagnosticEmitters;
         var synchronizer = loadout.InstallationInstance.GetGame().Synchronizer;
         var syncTree = (await synchronizer.BuildSyncTree(loadout)).ToFrozenDictionary();
-        var state = new LoadoutStateForEmitters(loadout, syncTree);
+        var state = LoadoutStateForEmitters.Create(loadout, syncTree);
 
         try
         {
