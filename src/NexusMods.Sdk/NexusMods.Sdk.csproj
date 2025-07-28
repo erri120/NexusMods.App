@@ -23,8 +23,8 @@
 
     <Target Name="WriteCurrentDate" BeforeTargets="BeforeBuild">
         <MakeDir Directories="$(BaseIntermediateOutputPath)" />
-        <Exec ContinueOnError="true" Condition="'$(OS)' != 'Windows_NT'" Command="bash -c &quot;date -u +%Y-%m-%dT%H:%M:%SZ &gt; $(BuildDateOutput)&quot;"  />
-        <Exec ContinueOnError="true" Condition="'$(OS)' == 'Windows_NT'" Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;Get-Date -Format o | Out-File -FilePath '$(BuildDateOutput)' -Encoding UTF8&quot;" />
+        <Exec Condition="'$(OS)' != 'Windows_NT'" Command="bash -c &quot;date -u +%Y-%m-%dT%H:%M:%SZ &gt; $(BuildDateOutput)&quot;"  />
+        <Exec Condition="'$(OS)' == 'Windows_NT'" Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;Get-Date -Format o | Out-File -FilePath '$(BuildDateOutput)' -Encoding UTF8&quot;" />
     </Target>
 
     <ItemGroup Condition="Exists('$(BuildDateOutput)')">
