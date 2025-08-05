@@ -8,6 +8,20 @@ using NexusMods.MnemonicDB.Abstractions;
 
 namespace NexusMods.Abstractions.Games.FileHashes;
 
+[PublicAPI]
+public interface IFileHashesServiceProvider
+{
+    /// <summary>
+    /// Returns a service instance with the latest file hashes database.
+    /// </summary>
+    ValueTask<IFileHashesService> GetService(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Updates the file hashes database if needed or if forced to.
+    /// </summary>
+    ValueTask CheckForDbUpdate(bool forceUpdate = false, CancellationToken cancellationToken = default);
+}
+
 /// <summary>
 /// Interface for the file hashes service, which provides a way to download and update the file hashes database
 /// </summary>
@@ -15,19 +29,9 @@ namespace NexusMods.Abstractions.Games.FileHashes;
 public interface IFileHashesService
 {
     /// <summary>
-    /// The current file hashes database, will throw an error if not initialized via GetFileHashesDb first.
+    /// The current file hashes database.
     /// </summary>
     public IDb Current { get; }
-
-    /// <summary>
-    /// Get the file hashes database, downloading it if necessary
-    /// </summary>
-    public ValueTask<IDb> GetFileHashesDb();
-
-    /// <summary>
-    /// Force an update of the file hashes database
-    /// </summary>
-    public Task CheckForUpdate(bool forceUpdate = false);
 
     /// <summary>
     /// Gets all known vanity versions for a given game.

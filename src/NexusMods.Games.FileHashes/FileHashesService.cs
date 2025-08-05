@@ -1,118 +1,27 @@
-using System.Diagnostics;
-using System.IO.Compression;
-using System.Text.Json;
 using DynamicData.Kernel;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NexusMods.Abstractions.EpicGameStore.Models;
 using NexusMods.Abstractions.EpicGameStore.Values;
 using NexusMods.Abstractions.GameLocators;
 using NexusMods.Abstractions.Games.FileHashes;
 using NexusMods.Abstractions.Games.FileHashes.Models;
-using NexusMods.Abstractions.Jobs;
 using NexusMods.Abstractions.NexusWebApi.Types.V2;
-using NexusMods.Abstractions.Settings;
 using NexusMods.Abstractions.Steam.Values;
-using NexusMods.Games.FileHashes.DTOs;
 using NexusMods.Hashing.xxHash3;
-using NexusMods.MnemonicDB;
 using NexusMods.MnemonicDB.Abstractions;
-using NexusMods.MnemonicDB.Storage;
-using NexusMods.MnemonicDB.Storage.RocksDbBackend;
-using NexusMods.Paths;
 using NexusMods.Sdk;
-using NexusMods.Sdk.IO;
 using BuildId = NexusMods.Abstractions.GOG.Values.BuildId;
 
 namespace NexusMods.Games.FileHashes;
 
-internal sealed class FileHashesService : IFileHashesService, IDisposable
+internal sealed class FileHashesService : IFileHashesService
 {
-    private readonly ScopedAsyncLock _lock = new();
-    private readonly FileHashesServiceSettings _settings;
-    private readonly IFileSystem _fileSystem;
-    private readonly HttpClient _httpClient;
-    private readonly JsonSerializerOptions _jsonSerializerOptions;
-    private readonly Dictionary<AbsolutePath, ConnectedDb> _databases;
-    private readonly IServiceProvider _provider;
-    private readonly AbsolutePath _hashDatabaseLocation;
+    private readonly ILogger _logger;
 
-    /// <summary>
-    /// The currently connected database (if any)
-    /// </summary>
-    private ConnectedDb? _currentDb;
-
-    private readonly ILogger<FileHashesService> _logger;
-
-    private record ConnectedDb(IDb Db, DatomStore Store, Backend Backend, DatabaseInfo DatabaseInfo);
-
-    public FileHashesService(ILogger<FileHashesService> logger, ISettingsManager settingsManager, IFileSystem fileSystem, HttpClient httpClient, JsonSerializerOptions jsonSerializerOptions, IServiceProvider provider)
+    public FileHashesService(IDb db, ILogger<FileHashesService> logger)
     {
+        Current = db;
         _logger = logger;
-        _httpClient = httpClient;
-        _jsonSerializerOptions = jsonSerializerOptions;
-        _fileSystem = fileSystem;
-        _settings = settingsManager.Get<FileHashesServiceSettings>();
-        _databases = new Dictionary<AbsolutePath, ConnectedDb>();
-        _provider = provider;
-
-        _hashDatabaseLocation = _settings.HashDatabaseLocation.ToPath(_fileSystem);
-        _hashDatabaseLocation.CreateDirectory();
-
-        Startup();
-    }
-
-    private ConnectedDb OpenDb(DatabaseInfo databaseInfo)
-    {
-        try
-        {
-            if (_databases.TryGetValue(databaseInfo.Path, out var existing))
-                return existing;
-
-            _logger.LogInformation("Opening hash database at {Path} for {Timestamp}", databaseInfo.Path, databaseInfo.CreationTime);
-            var backend = new Backend(readOnly: true);
-            var settings = new DatomStoreSettings
-            {
-                Path = databaseInfo.Path,
-            };
-
-            var store = new DatomStore(_provider.GetRequiredService<ILogger<DatomStore>>(), settings, backend);
-            var connection = new Connection(_provider.GetRequiredService<ILogger<Connection>>(), store, _provider, [], readOnlyMode: true);
-            var connectedDb = new ConnectedDb(connection.Db, store, backend, databaseInfo);
-
-            _databases[databaseInfo.Path] = connectedDb;
-            return connectedDb;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error opening database at {Path}", databaseInfo.Path);
-            throw;
-        }
-    }
-
-    private record struct DatabaseInfo(AbsolutePath Path, DateTimeOffset CreationTime);
-
-    private IEnumerable<DatabaseInfo> ExistingDBs()
-    {
-        return _hashDatabaseLocation
-            .EnumerateDirectories(recursive: false)
-            .Where(d => !d.FileName.EndsWith("_tmp"))
-            .Select(path =>
-            {
-                // Format is "{guid}_{timestamp}"
-                var parts = path.FileName.Split('_');
-                if (parts.Length != 2 || !ulong.TryParse(parts[1], out var timestamp)) return Optional<DatabaseInfo>.None;
-                return new DatabaseInfo(Path: path, CreationTime: DateTimeOffset.FromUnixTimeSeconds((long)timestamp));
-            })
-            .Where(static optional => optional.HasValue)
-            .Select(static optional => optional.Value)
-            .OrderByDescending(static databaseInfo => databaseInfo.CreationTime);
-    }
-
-    /// <inheritdoc />
-    public async Task CheckForUpdate(bool forceUpdate = false)
-    {
-        await CheckForUpdateCore(forceUpdate);
     }
 
     /// <inheritdoc />
@@ -128,203 +37,6 @@ internal sealed class FileHashesService : IFileHashesService, IDisposable
         return VersionDefinition.All(Current)
             .Where(v => v.GameId == gameId)
             .ToList();
-    }
-
-    private bool ShouldCheckForUpdate()
-    {
-        if (!GameHashesReleaseFileName.FileExists) return true;
-        var lastUpdated = GameHashesReleaseFileName.FileInfo.LastWriteTimeUtc;
-        var diff = DateTime.UtcNow - lastUpdated;
-        return diff >= _settings.HashDatabaseUpdateInterval;
-    }
-
-    private void Startup()
-    {
-        var existingDatabases = ExistingDBs().ToArray();
-
-        // Cleanup old databases
-        foreach (var databaseInfo in existingDatabases.Skip(1))
-        {
-            databaseInfo.Path.DeleteDirectory(true);
-        }
-
-        if (existingDatabases.TryGetFirst(out var latestDatabase))
-        {
-            _currentDb = OpenDb(latestDatabase);
-        }
-
-        Task.Run(async () => await CheckForUpdateCore(forceUpdate: false, cancellationToken: CancellationToken.None));
-    }
-
-    private async Task CheckForUpdateCore(bool forceUpdate, CancellationToken cancellationToken = default)
-    {
-        using var _ = await _lock.LockAsync();
-
-        var existingDatabases = ExistingDBs().ToArray();
-        var shouldCheckForUpdate = forceUpdate || existingDatabases.Length == 0 || ShouldCheckForUpdate();
-
-        if (!shouldCheckForUpdate && existingDatabases.TryGetFirst(out var latestDatabase))
-        {
-            _currentDb = OpenDb(latestDatabase);
-            return;
-        }
-
-        Manifest? latestReleaseManifest = null;
-        if (shouldCheckForUpdate)
-        {
-            latestReleaseManifest = await FetchLatestReleaseManifest(GameHashesReleaseFileName, cancellationToken: cancellationToken);
-        }
-
-        if (existingDatabases.Length == 0)
-        {
-            var embeddedDatabaseInfo = await AddEmbeddedDatabase(cancellationToken: cancellationToken);
-            if (latestReleaseManifest is null)
-            {
-                if (!embeddedDatabaseInfo.HasValue)
-                {
-                    _logger.LogError("Failed to add embedded game hashes database and failed to fetch latest release manifest, game hashes functionality will be unavailable");
-                    return;
-                }
-
-                _logger.LogWarning("Failed to fetch latest release manifest, defaulting to embedded game hashes database which may be out-of-date");
-                _currentDb = OpenDb(embeddedDatabaseInfo.Value);
-                return;
-            }
-
-            Debug.Assert(latestReleaseManifest is not null, "should've returned if we didn't have a manifest");
-            if (embeddedDatabaseInfo.HasValue)
-            {
-                existingDatabases = ExistingDBs().ToArray();
-                Debug.Assert(existingDatabases.Length == 1);
-            }
-        }
-
-        if (latestReleaseManifest is null && existingDatabases.Length == 0)
-        {
-            _logger.LogError("Failed to fetch the latest release manifest and failed to use the embedded database, game hashes functionality will be unavailable");
-            return;
-        }
-
-        if (latestReleaseManifest is null || existingDatabases[0].CreationTime >= latestReleaseManifest.CreatedAt)
-        {
-            _currentDb = OpenDb(existingDatabases[0]);
-            return;
-        }
-
-        _logger.LogInformation("Fetching latest games hashes database");
-        var releaseDatabaseInfo = await AddReleaseDatabase(latestReleaseManifest, cancellationToken);
-        if (!releaseDatabaseInfo.HasValue) return;
-
-        _currentDb = OpenDb(releaseDatabaseInfo.Value);
-    }
-
-    private async ValueTask<Manifest?> FetchLatestReleaseManifest(AbsolutePath storagePath, CancellationToken cancellationToken)
-    {
-        const int defaultTimeout = 15;
-
-        var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        cts.CancelAfter(delay: TimeSpan.FromSeconds(defaultTimeout));
-
-        try
-        {
-            await using var fileStream = storagePath.Create();
-            await using (var httpStream = await _httpClient.GetStreamAsync(_settings.GithubManifestUrl, cancellationToken: cts.Token))
-            {
-                await httpStream.CopyToAsync(fileStream, cancellationToken: cts.Token);
-            }
-
-            fileStream.Position = 0;
-            return await JsonSerializer.DeserializeAsync<Manifest>(fileStream, _jsonSerializerOptions, cancellationToken: cts.Token);
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Failed to fetch latest release manifest from `{Url}`", _settings.GithubManifestUrl);
-            return null;
-        }
-    }
-
-    private async ValueTask<Optional<DatabaseInfo>> AddEmbeddedDatabase(CancellationToken cancellationToken)
-    {
-        try
-        {
-            var streamFactory = new EmbeddedResourceStreamFactory<FileHashesService>(resourceName: "games_hashes_db.zip");
-            await using var archiveStream = await streamFactory.GetStreamAsync();
-            var creationTime = ApplicationConstants.BuildDate;
-
-            var path = await AddDatabase(archiveStream, creationTime, cancellationToken);
-            return new DatabaseInfo(path, creationTime);
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Failed to add embedded database");
-            return Optional<DatabaseInfo>.None;
-        }
-    }
-
-    private async ValueTask<Optional<DatabaseInfo>> AddReleaseDatabase(Manifest releaseManifest, CancellationToken cancellationToken)
-    {
-        try
-        {
-            await using var httpStream = await _httpClient.GetStreamAsync(_settings.GameHashesDbUrl, cancellationToken: cancellationToken);
-            var path = await AddDatabase(httpStream, releaseManifest.CreatedAt, cancellationToken: cancellationToken);
-            return new DatabaseInfo(path, releaseManifest.CreatedAt);
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Failed to add release database from {Url}", _settings.GameHashesDbUrl);
-            return Optional<DatabaseInfo>.None;
-        }
-    }
-
-    private async ValueTask<AbsolutePath> AddDatabase(
-        Stream archiveStream,
-        DateTimeOffset databaseCreationTime,
-        CancellationToken cancellationToken)
-    {
-        var name = $"{Guid.NewGuid()}_{databaseCreationTime.ToUnixTimeSeconds()}";
-
-        await using var archivePath = new TemporaryPath(_fileSystem, _hashDatabaseLocation / $"{name}.zip");
-        await using (var fileStream = archivePath.Path.Create())
-        {
-            await archiveStream.CopyToAsync(fileStream, cancellationToken: cancellationToken);
-        }
-
-        await using var extractionDirectory = new TemporaryPath(_fileSystem, _hashDatabaseLocation / $"{name}_tmp");
-        await using (var fileStream = archivePath.Path.Read())
-        using (var zipArchive = new ZipArchive(fileStream, ZipArchiveMode.Read))
-        {
-            foreach (var fileEntry in zipArchive.Entries)
-            {
-                var destinationPath = extractionDirectory.Path.Combine(fileEntry.FullName);
-                destinationPath.Parent.CreateDirectory();
-
-                await using var entryStream = fileEntry.Open();
-                await using var outputStream = destinationPath.Create();
-                await entryStream.CopyToAsync(outputStream, cancellationToken: cancellationToken);
-            }
-        }
-
-        var finalDirectory = _hashDatabaseLocation / name;
-        Directory.Move(
-            sourceDirName: extractionDirectory.Path.ToNativeSeparators(OSInformation.Shared),
-            destDirName: finalDirectory.ToNativeSeparators(OSInformation.Shared)
-        );
-
-        return finalDirectory;
-    }
-
-    private AbsolutePath GameHashesReleaseFileName => _hashDatabaseLocation / _settings.ReleaseFilePath;
-
-    /// <inheritdoc />
-    public async ValueTask<IDb> GetFileHashesDb()
-    {
-        if (_currentDb is not null)
-            return _currentDb.Db;
-
-        // Call core since we're already inside a lock
-        await CheckForUpdateCore(false);
-
-        return Current;
     }
 
     /// <inheritdoc/>
@@ -411,7 +123,7 @@ internal sealed class FileHashesService : IFileHashesService, IDisposable
     }
 
     /// <inheritdoc />
-    public IDb Current => _currentDb?.Db ?? throw new InvalidOperationException("No database connected");
+    public IDb Current { get; }
 
     /// <inheritdoc />
     public bool TryGetVanityVersion(LocatorIdsWithGameStore locatorIdsWithGameStore, out VanityVersion version)
@@ -455,7 +167,7 @@ internal sealed class FileHashesService : IFileHashesService, IDisposable
                 return false;
             }
 
-            var hasVersionDefinition = VersionDefinition.All(_currentDb!.Db)
+            var hasVersionDefinition = VersionDefinition.All(Current)
                 .Select(version =>
                 {
                     var matchingIdCount = gogBuilds.Count(g => version.GogBuildsIds.Contains(g));
@@ -494,7 +206,7 @@ internal sealed class FileHashesService : IFileHashesService, IDisposable
                 return false;
             }
             
-            var wasFound = VersionDefinition.All(_currentDb!.Db)
+            var wasFound = VersionDefinition.All(Current)
                 .Select(version =>
                 {
                     var matchingIdCount = steamManifests.Count(g => version.SteamManifestsIds.Contains(g));
@@ -513,7 +225,7 @@ internal sealed class FileHashesService : IFileHashesService, IDisposable
         }
         else if (gameStore == GameStore.EGS)
         {
-            var versionsByManifestHash = VersionDefinition.All(_currentDb!.Db)
+            var versionsByManifestHash = VersionDefinition.All(Current)
                 .SelectMany(version =>
                     {
                         if (VersionDefinition.EpicGameStoreBuildsIds.IsIn(version)) 
@@ -597,15 +309,5 @@ internal sealed class FileHashesService : IFileHashesService, IDisposable
             .OrderByDescending(t => t.Matches)
             .Select(t => t.VersionData)
             .FirstOrOptional(_ => true);
-    }
-
-    /// <inheritdoc/>
-    public void Dispose()
-    {
-        foreach (var connection in _databases.Values)
-        {
-            connection.Backend.Dispose();
-            connection.Store.Dispose();
-        }
     }
 }

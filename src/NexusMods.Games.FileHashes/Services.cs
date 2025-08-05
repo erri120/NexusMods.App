@@ -20,7 +20,7 @@ public static class Services
             .AddGogBuildModel()
             .AddSteamManifestModel()
             .AddEpicGameStoreBuildModel()
-            .AddSingleton<IFileHashesService, FileHashesService>()
+            .AddSingleton<IFileHashesServiceProvider, FileHashesServiceProvider>()
             .AddSettings<FileHashesServiceSettings>()
             .AddHashRelationModel();
     }

@@ -56,7 +56,7 @@ public class ALoadoutSynchronizer : ILoadoutSynchronizer
     protected readonly IConnection Connection;
 
     private readonly IJobMonitor _jobMonitor;
-    private readonly IFileHashesService _fileHashService;
+    private readonly IFileHashesServiceProvider _fileHashServiceProvider;
 
     /// <summary>
     /// Loadout synchronizer base constructor.
@@ -68,14 +68,12 @@ public class ALoadoutSynchronizer : ILoadoutSynchronizer
         ISorter sorter,
         IConnection conn,
         IOSInformation os,
-        IFileHashesService fileHashService,
         IGarbageCollectorRunner garbageCollectorRunner)
     {
         _serviceProvider = serviceProvider;
         _synchronizerService = serviceProvider.GetRequiredService<ISynchronizerService>();
         _jobMonitor = serviceProvider.GetRequiredService<IJobMonitor>();
-        
-        _fileHashService = fileHashService;
+        _fileHashServiceProvider = serviceProvider.GetRequiredService<IFileHashesServiceProvider>();
 
         Logger = logger;
         _fileStore = fileStore;
@@ -96,7 +94,6 @@ public class ALoadoutSynchronizer : ILoadoutSynchronizer
         provider.GetRequiredService<ISorter>(),
         provider.GetRequiredService<IConnection>(),
         provider.GetRequiredService<IOSInformation>(),
-        provider.GetRequiredService<IFileHashesService>(),
         provider.GetRequiredService<IGarbageCollectorRunner>()
     ) { }
 
@@ -186,15 +183,12 @@ public class ALoadoutSynchronizer : ILoadoutSynchronizer
         return newOverrides.Id;
     }
 
-
-
-    public Dictionary<GamePath, SyncNode> BuildSyncTree(IEnumerable<PathPartPair> currentState, IEnumerable<PathPartPair> previousState, Loadout.ReadOnly loadout)
+    public Dictionary<GamePath, SyncNode> BuildSyncTree(IFileHashesService fileHashesService, IEnumerable<PathPartPair> currentState, IEnumerable<PathPartPair> previousState, Loadout.ReadOnly loadout)
     {
-        var referenceDb = _fileHashService.Current;
         Dictionary<GamePath, SyncNode> syncTree = new();
-        
+
         // Add in the game state
-        foreach (var gameFile in GetNormalGameState(referenceDb, loadout))
+        foreach (var gameFile in GetNormalGameState(fileHashesService, loadout))
         {
             ref var syncTreeEntry = ref CollectionsMarshal.GetValueRefOrAddDefault(syncTree, gameFile.Path, out var exists);
             
@@ -291,13 +285,13 @@ public class ALoadoutSynchronizer : ILoadoutSynchronizer
         return syncTree;
     }
 
-    public IEnumerable<LoadoutSourceItem> GetNormalGameState(IDb referenceDb, Loadout.ReadOnly loadout)
+    public IEnumerable<LoadoutSourceItem> GetNormalGameState(IFileHashesService fileHashesService, Loadout.ReadOnly loadout)
     {
         var locatorIds = loadout.LocatorIds.Distinct().ToArray();
         if (locatorIds.Length != loadout.LocatorIds.Count)
             Logger.LogWarning("Found duplicate locator IDs `{LocatorIds}` on Loadout {} for game `{Game}` when getting game state", loadout.LocatorIds, loadout.Name, loadout.InstallationInstance.Game.Name);
-        
-        foreach (var item in _fileHashService.GetGameFiles((loadout.InstallationInstance.Store, locatorIds)))
+
+        foreach (var item in fileHashesService.GetGameFiles((loadout.InstallationInstance.Store, locatorIds)))
         {
             yield return new LoadoutSourceItem
             {
@@ -356,7 +350,7 @@ public class ALoadoutSynchronizer : ILoadoutSynchronizer
     /// <inheritdoc />
     public async Task<Dictionary<GamePath, SyncNode>> BuildSyncTree(Loadout.ReadOnly loadout)
     {
-        var metadata = await ReindexState(loadout.InstallationInstance, ignoreModifiedDates: false, Connection);
+        var metadata = await ReindexState(loadout.InstallationInstance, ignoreModifiedDates: false, connection: Connection);
         var previouslyApplied = loadout.Installation.GetLastAppliedDiskState();
         return BuildSyncTree(DiskStateToPathPartPair(metadata.DiskStateEntries), DiskStateToPathPartPair(previouslyApplied), loadout);
     }
@@ -489,7 +483,7 @@ public class ALoadoutSynchronizer : ILoadoutSynchronizer
     /// to reflect the new files. This will happen when a game store updates the game files, overwriting the existing
     /// game files.
     /// </summary>
-    private async ValueTask<Loadout.ReadOnly> ReprocessGameUpdates(Loadout.ReadOnly loadout)
+    private async ValueTask<Loadout.ReadOnly> ReprocessGameUpdates(IFileHashesService fileHashesService, Loadout.ReadOnly loadout)
     {
         var gameLocatorResults = loadout.InstallationInstance.Locator.Find(loadout.InstallationInstance.Game);
 
@@ -522,7 +516,7 @@ public class ALoadoutSynchronizer : ILoadoutSynchronizer
         }
 
         // Make a lookup set of the new files
-        var versionFiles = _fileHashService
+        var versionFiles = fileHashesService
             .GetGameFiles((loadout.InstallationInstance.Store, newLocatorIds))
             .Select(file => file.Path)
             .ToHashSet();
@@ -557,7 +551,7 @@ public class ALoadoutSynchronizer : ILoadoutSynchronizer
             };
         }
 
-        if (_fileHashService.TryGetVanityVersion((gameLocatorResult.Store, newLocatorIds), out var vanityVersion))
+        if (fileHashesService.TryGetVanityVersion((gameLocatorResult.Store, newLocatorIds), out var vanityVersion))
         {
             tx.Add(loadout, Loadout.GameVersion, vanityVersion);
         }
@@ -924,9 +918,8 @@ public class ALoadoutSynchronizer : ILoadoutSynchronizer
 
     public async Task<GameInstallMetadata.ReadOnly> RescanFiles(GameInstallation gameInstallation, bool ignoreModifiedDates)
     {
-        // Make sure the file hashes are up to date
-        await _fileHashService.GetFileHashesDb();
-        return await ReindexState(gameInstallation, ignoreModifiedDates, Connection);
+        var fileHashesService = await _fileHashServiceProvider.GetService();
+        return await ReindexState(fileHashesService, gameInstallation, ignoreModifiedDates, Connection);
     }
 
     /// <summary>
@@ -1059,19 +1052,19 @@ public class ALoadoutSynchronizer : ILoadoutSynchronizer
     /// <summary>
     /// Returns true if the loadout state doesn't match the last scanned disk state.
     /// </summary>
-    public bool ShouldSynchronize(Loadout.ReadOnly loadout, DiskState previousDiskState, DiskState lastScannedDiskState)
+    public bool ShouldSynchronize(IFileHashesService fileHashesService, Loadout.ReadOnly loadout, DiskState previousDiskState, DiskState lastScannedDiskState)
     {
-        var syncTree = BuildSyncTree(DiskStateToPathPartPair(lastScannedDiskState), DiskStateToPathPartPair(previousDiskState), loadout);
+        var syncTree = BuildSyncTree(fileHashesService, DiskStateToPathPartPair(lastScannedDiskState), DiskStateToPathPartPair(previousDiskState), loadout);
         // Process the sync tree to get the actions populated in the nodes
         ProcessSyncTree(syncTree);
         
         return syncTree.Any(n => n.Value.Actions != Actions.DoNothing);
     }
-    
+
     /// <inheritdoc />
-    public FileDiffTree LoadoutToDiskDiff(Loadout.ReadOnly loadout, DiskState previousDiskState, DiskState lastScannedDiskState)
+    public FileDiffTree LoadoutToDiskDiff(IFileHashesService fileHashesService, Loadout.ReadOnly loadout, DiskState previousDiskState, DiskState lastScannedDiskState)
     {
-        var syncTree = BuildSyncTree(DiskStateToPathPartPair(lastScannedDiskState), DiskStateToPathPartPair(previousDiskState), loadout);
+        var syncTree = BuildSyncTree(fileHashesService, DiskStateToPathPartPair(lastScannedDiskState), DiskStateToPathPartPair(previousDiskState), loadout);
         // Process the sync tree to get the actions populated in the nodes
         ProcessSyncTree(syncTree);
 
@@ -1225,7 +1218,7 @@ public class ALoadoutSynchronizer : ILoadoutSynchronizer
     /// <summary>
     /// Reindex the state of the game, running a transaction if changes are found
     /// </summary>
-    private async Task<GameInstallMetadata.ReadOnly> ReindexState(GameInstallation installation, bool ignoreModifiedDates, IConnection connection)
+    private async Task<GameInstallMetadata.ReadOnly> ReindexState(IFileHashesService fileHashesService, GameInstallation installation, bool ignoreModifiedDates, IConnection connection)
     {        
         using var _ = await _lock.LockAsync();
         var originalMetadata = installation.GetMetadata(connection);
@@ -1253,9 +1246,9 @@ public class ALoadoutSynchronizer : ILoadoutSynchronizer
     /// <summary>
     /// Reindex the state of the game
     /// </summary>
-    public async Task<bool> ReindexState(GameInstallation installation, bool ignoreModifiedDates, IConnection connection, ITransaction tx)
+    public async Task<bool> ReindexState(IFileHashesService fileHashesService, GameInstallation installation, bool ignoreModifiedDates, IConnection connection, ITransaction tx)
     {
-        var hashDb = await _fileHashService.GetFileHashesDb();
+        var hashDb = fileHashesService.Current;
 
         var gameInstallMetadata = GameInstallMetadata.Load(connection.Db, installation.GameMetadataId);
 
@@ -1403,7 +1396,6 @@ public class ALoadoutSynchronizer : ILoadoutSynchronizer
     /// <inheritdoc />
     public virtual IJobTask<CreateLoadoutJob, Loadout.ReadOnly> CreateLoadout(GameInstallation installation, string? suggestedName = null)
     {
-
         return _jobMonitor.Begin(new CreateLoadoutJob(installation), async ctx =>
             {
                 // Prime the hash database to make sure it's loaded
@@ -1517,7 +1509,7 @@ public class ALoadoutSynchronizer : ILoadoutSynchronizer
     public async Task ActivateLoadout(LoadoutId loadoutId)
     {
         var loadout = Loadout.Load(Connection.Db, loadoutId);
-        var reindexed = await ReindexState(loadout.InstallationInstance, ignoreModifiedDates: false, Connection);
+        var reindexed = await ReindexState(loadout.InstallationInstance, ignoreModifiedDates: false, connection: Connection);
         
         var tree = BuildSyncTree(DiskStateToPathPartPair(reindexed.DiskStateEntries), DiskStateToPathPartPair(reindexed.DiskStateEntries), loadout);
         ProcessSyncTree(tree);
@@ -1721,7 +1713,7 @@ public class ALoadoutSynchronizer : ILoadoutSynchronizer
     public async Task ResetToOriginalGameState(GameInstallation installation, LocatorId[] locatorIds)
     {
         var gameState = _fileHashService.GetGameFiles((installation.Store, locatorIds));
-        var metaData = await ReindexState(installation, ignoreModifiedDates: false, Connection);
+        var metaData = await ReindexState(installation, ignoreModifiedDates: false, connection: Connection);
 
         List<PathPartPair> diskState = [];
 
