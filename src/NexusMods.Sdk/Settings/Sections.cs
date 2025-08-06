@@ -1,6 +1,6 @@
 using JetBrains.Annotations;
 
-namespace NexusMods.Abstractions.Settings;
+namespace NexusMods.Sdk.Settings;
 
 /// <summary>
 /// A collection of sections to use.

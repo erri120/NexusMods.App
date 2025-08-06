@@ -1,7 +1,7 @@
 using JetBrains.Annotations;
 using OneOf;
 
-namespace NexusMods.Abstractions.Settings;
+namespace NexusMods.Sdk.Settings;
 
 /// <summary>
 /// Represents either a failed or successful validation result.

@@ -1,6 +1,7 @@
 using JetBrains.Annotations;
+using NexusMods.Sdk.Settings;
 
-namespace NexusMods.Abstractions.Settings;
+namespace NexusMods.UI.Sdk.Settings;
 
 /// <summary>
 /// Container for a singe value with multiple choices.

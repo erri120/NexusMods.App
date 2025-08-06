@@ -1,7 +1,7 @@
 using JetBrains.Annotations;
 using TransparentValueObjects;
 
-namespace NexusMods.Abstractions.Settings;
+namespace NexusMods.Sdk.Settings;
 
 /// <summary>
 /// Represents a unique identifier for a storage backend.

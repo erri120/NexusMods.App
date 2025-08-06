@@ -1,6 +1,6 @@
 using JetBrains.Annotations;
 
-namespace NexusMods.Abstractions.Settings;
+namespace NexusMods.Sdk.Settings;
 
 /// <summary>
 /// Configuration builder for types that implement <see cref="ISettings"/>.
@@ -8,14 +8,6 @@ namespace NexusMods.Abstractions.Settings;
 [PublicAPI]
 public interface ISettingsBuilder
 {
-    /// <summary>
-    /// Configures the settings type <typeparamref name="TSettings"/> to be
-    /// exposed in the UI.
-    /// </summary>
-    ISettingsBuilder AddToUI<TSettings>(
-        Func<ISettingsUIBuilder<TSettings>, ISettingsUIBuilder<TSettings>> configureUI
-    ) where TSettings : class, ISettings, new();
-
     /// <summary>
     /// Configure the default value to use a factory instead of new().
     /// </summary>
@@ -32,4 +24,6 @@ public interface ISettingsBuilder
     ISettingsBuilder ConfigureStorageBackend<TSettings>(
         Action<ISettingsStorageBackendBuilder<TSettings>> configureStorageBackend
     ) where TSettings : class, ISettings, new();
+
+    ISettingsBuilder AddConfiguration();
 }

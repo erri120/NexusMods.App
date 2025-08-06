@@ -1,7 +1,8 @@
 using DynamicData.Binding;
 using JetBrains.Annotations;
+using NexusMods.Sdk.Settings;
 
-namespace NexusMods.Abstractions.Settings;
+namespace NexusMods.UI.Sdk.Settings;
 
 /// <summary>
 /// Helper abstract class for <see cref="SettingsPropertyValueContainer"/>.
@@ -47,7 +48,7 @@ public abstract class APropertyValueContainer<T> : AbstractNotifyPropertyChanged
         _validationResult = _validator.Invoke(value);
     }
 
-    private static ValidationResult DefaultValidator(T value) => Settings.ValidationResult.CreateSuccessful();
+    private static ValidationResult DefaultValidator(T value) => ValidationResult.CreateSuccessful();
 
     /// <summary>
     /// Gets the default value.

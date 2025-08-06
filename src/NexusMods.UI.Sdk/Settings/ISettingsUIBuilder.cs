@@ -1,7 +1,8 @@
 using System.Linq.Expressions;
 using JetBrains.Annotations;
+using NexusMods.Sdk.Settings;
 
-namespace NexusMods.Abstractions.Settings;
+namespace NexusMods.UI.Sdk.Settings;
 
 /// <summary>
 /// Configuration builder for <typeparamref name="TSettings"/> that gets exposed in the UI.

@@ -1,6 +1,8 @@
 using JetBrains.Annotations;
+using NexusMods.Sdk;
+using NexusMods.Sdk.Settings;
 
-namespace NexusMods.Abstractions.Settings;
+namespace NexusMods.UI.Sdk.Settings;
 
 /// <summary>
 /// A settings container for a <see cref="ConfigurablePath"/> value.

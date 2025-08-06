@@ -1,6 +1,6 @@
 using JetBrains.Annotations;
 
-namespace NexusMods.Abstractions.Settings;
+namespace NexusMods.Sdk.Settings;
 
 /// <summary>
 /// Represents a settings manager.
@@ -35,13 +35,13 @@ public interface ISettingsManager
     /// </summary>
     IObservable<T> GetChanges<T>(bool prependCurrent = false) where T : class, ISettings, new();
 
-    /// <summary>
-    /// Gets an array containing all properties to be exposed to the UI.
-    /// </summary>
-    ISettingsPropertyUIDescriptor[] GetAllUIProperties();
-
-    /// <summary>
-    /// Gets an array containing all sections
-    /// </summary>
-    ISettingsSectionDescriptor[] GetAllSections();
+    // /// <summary>
+    // /// Gets an array containing all properties to be exposed to the UI.
+    // /// </summary>
+    // ISettingsPropertyUIDescriptor[] GetAllUIProperties();
+    //
+    // /// <summary>
+    // /// Gets an array containing all sections
+    // /// </summary>
+    // ISettingsSectionDescriptor[] GetAllSections();
 }

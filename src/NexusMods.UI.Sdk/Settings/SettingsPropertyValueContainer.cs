@@ -1,7 +1,7 @@
 using JetBrains.Annotations;
 using OneOf;
 
-namespace NexusMods.Abstractions.Settings;
+namespace NexusMods.UI.Sdk.Settings;
 
 /// <summary>
 /// Value container for a settings property.

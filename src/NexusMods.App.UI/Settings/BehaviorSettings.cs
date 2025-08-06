@@ -1,4 +1,5 @@
-using NexusMods.Abstractions.Settings;
+using NexusMods.Sdk.Settings;
+using NexusMods.UI.Sdk.Settings;
 
 namespace NexusMods.App.UI.Settings;
 

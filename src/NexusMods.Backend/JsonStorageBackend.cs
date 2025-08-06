@@ -4,8 +4,9 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NexusMods.Paths;
+using NexusMods.Sdk.Settings;
 
-namespace NexusMods.Abstractions.Settings;
+namespace NexusMods.Backend;
 
 [UsedImplicitly]
 public sealed class JsonStorageBackend : ISettingsStorageBackend

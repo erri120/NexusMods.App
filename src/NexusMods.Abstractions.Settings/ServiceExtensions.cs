@@ -1,5 +1,6 @@
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
+using NexusMods.Sdk.Settings;
 
 namespace NexusMods.Abstractions.Settings;
 
@@ -10,44 +11,11 @@ namespace NexusMods.Abstractions.Settings;
 public static class ServiceExtensions
 {
     /// <summary>
-    /// Registers a settings type.
-    /// </summary>
-    public static IServiceCollection AddSettings<T>(this IServiceCollection serviceCollection)
-        where T : class, ISettings, new()
-    {
-        return serviceCollection.AddSingleton(new SettingsTypeInformation(
-            ObjectType: typeof(T),
-            DefaultValue: new T(),
-            ConfigureLambda: T.Configure
-        ));
-    }
-
-    /// <summary>
     /// Registers a new settings section.
     /// </summary>
     public static IServiceCollection AddSettingsSection(this IServiceCollection serviceCollection, SettingsSectionSetup setup)
     {
         return serviceCollection.AddSingleton(setup);
-    }
-
-    /// <summary>
-    /// Registers a settings storage backend in DI.
-    /// </summary>
-    /// <param name="serviceCollection">The Service Collection.</param>
-    /// <param name="isDefault">
-    /// Whether the backend should be registered as the default backend.
-    /// </param>
-    public static IServiceCollection AddSettingsStorageBackend<T>(
-        this IServiceCollection serviceCollection,
-        bool isDefault = false)
-        where T : class, IBaseSettingsStorageBackend
-    {
-        serviceCollection = serviceCollection.AddSingleton<IBaseSettingsStorageBackend, T>();
-        if (!isDefault) return serviceCollection;
-        return serviceCollection
-            .AddSingleton<T>()
-            .AddSingleton<DefaultSettingsStorageBackend>(serviceProvider => new DefaultSettingsStorageBackend(serviceProvider.GetRequiredService<T>())
-        );
     }
 
     /// <summary>
@@ -82,6 +50,6 @@ public static class ServiceExtensions
     public static void UseJson<T>(this ISettingsStorageBackendBuilder<T> builder)
         where T : class, ISettings, new()
     {
-        builder.UseStorageBackend(JsonStorageBackend.StaticId);
+        // builder.UseStorageBackend(JsonStorageBackend.StaticId);
     }
 }

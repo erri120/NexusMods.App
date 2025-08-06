@@ -1,7 +1,8 @@
 using JetBrains.Annotations;
+using NexusMods.Sdk.Settings;
 using NexusMods.UI.Sdk.Icons;
 
-namespace NexusMods.Abstractions.Settings;
+namespace NexusMods.UI.Sdk.Settings;
 
 /// <summary>
 /// Represents a section.

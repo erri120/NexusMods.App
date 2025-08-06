@@ -1,6 +1,6 @@
-namespace NexusMods.Abstractions.Settings;
+namespace NexusMods.Sdk.Settings;
 
-internal record SettingsTypeInformation(
+public record SettingsTypeInformation(
     Type ObjectType,
     ISettings DefaultValue,
     Func<ISettingsBuilder, ISettingsBuilder> ConfigureLambda
