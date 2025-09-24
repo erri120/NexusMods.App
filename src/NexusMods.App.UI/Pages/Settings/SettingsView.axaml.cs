@@ -30,19 +30,24 @@ public partial class SettingsView : ReactiveUserControl<ISettingsPageViewModel>
                 {
                     var (entries, sections) = tuple;
 
-                    var dict = sections.ToDictionary(x => x.Descriptor.Id);
-                    var grouped = entries
-                        .OrderBy(x => x.PropertyUIDescriptor.DisplayName, StringComparer.OrdinalIgnoreCase)
-                        .GroupBy(x => x.PropertyUIDescriptor.SectionId)
-                        .OrderByDescending(x => dict[x.Key].Descriptor.Priority);
+                    // var dict = sections.ToDictionary(x => x.Descriptor.Id);
+                    // var grouped = entries
+                    //     .OrderBy(x => x.Config.Options.DisplayName, StringComparer.OrdinalIgnoreCase)
+                    //     .GroupBy(x => x.Config.Options.Section)
+                    //     .OrderByDescending(x => dict[x.Key].Descriptor.Priority);
 
                     var res = new List<IViewModelInterface>();
 
-                    foreach (var group in grouped)
+                    foreach (var entry in entries)
                     {
-                        res.Add(dict[group.Key]);
-                        res.AddRange(group);
+                        res.Add(entry);
                     }
+
+                    // foreach (var group in grouped)
+                    // {
+                    //     res.Add(dict[group.Key]);
+                    //     res.AddRange(group);
+                    // }
 
                     return res;
                 }).BindToView(this, view => view.SettingEntriesItemsControl.ItemsSource).DisposeWith(d);
