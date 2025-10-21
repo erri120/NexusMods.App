@@ -3,9 +3,9 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
-using NexusMods.Networking.GitHub.DTOs;
+using NexusMods.Sdk.GitHub;
 
-namespace NexusMods.Networking.GitHub;
+namespace NexusMods.Backend.GitHub;
 
 [PublicAPI]
 internal class GitHubApi : IGitHubApi

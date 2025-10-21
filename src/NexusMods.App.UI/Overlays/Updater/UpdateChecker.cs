@@ -1,10 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using NexusMods.Networking.GitHub;
-using NexusMods.Networking.GitHub.DTOs;
 using NexusMods.Paths;
 using NexusMods.Sdk;
+using NexusMods.Sdk.GitHub;
 
 namespace NexusMods.App.UI.Overlays.Updater;
 

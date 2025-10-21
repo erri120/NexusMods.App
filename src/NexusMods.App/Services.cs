@@ -23,7 +23,6 @@ using NexusMods.Games.Generic;
 using NexusMods.Games.TestHarness;
 using NexusMods.Library;
 using NexusMods.Networking.EpicGameStore;
-using NexusMods.Networking.GitHub;
 using NexusMods.Networking.GOG;
 using NexusMods.Networking.HttpDownloader;
 using NexusMods.Networking.NexusWebApi;
@@ -108,7 +107,7 @@ public static class Services
                 .AddSteamCli()
                 .AddGOG()
                 .AddFileHashes()
-                .AddGitHubApi();
+                .AddGitHub();
 
             if (!startupMode.IsAvaloniaDesigner)
                 services.AddSingleProcess(Mode.Main);

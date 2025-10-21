@@ -1,6 +1,0 @@
-<Project Sdk="Microsoft.NET.Sdk">
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\NexusMods.Networking.GitHub\NexusMods.Networking.GitHub.csproj" />
-    <ProjectReference Include="..\..\src\NexusMods.Sdk\NexusMods.Sdk.csproj" />
-  </ItemGroup>
-</Project>

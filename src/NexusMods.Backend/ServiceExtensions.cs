@@ -4,6 +4,7 @@ using NexusMods.Backend.FileExtractor;
 using NexusMods.Backend.FileExtractor.Extractors;
 using NexusMods.Abstractions.Loadouts.Synchronizers;
 using NexusMods.Backend.Game;
+using NexusMods.Backend.GitHub;
 using NexusMods.Backend.Jobs;
 using NexusMods.Backend.OS;
 using NexusMods.Backend.Process;
@@ -13,6 +14,7 @@ using NexusMods.FileExtractor;
 using NexusMods.Paths;
 using NexusMods.Sdk;
 using NexusMods.Sdk.FileExtractor;
+using NexusMods.Sdk.GitHub;
 using NexusMods.Sdk.Jobs;
 using NexusMods.Sdk.Settings;
 using NexusMods.Sdk.Tracking;
@@ -23,6 +25,11 @@ namespace NexusMods.Backend;
 
 public static class ServiceExtensions
 {
+    public static IServiceCollection AddGitHub(this IServiceCollection serviceCollection)
+    {
+        return serviceCollection.AddSingleton<IGitHubApi, GitHubApi>();
+    }
+
     public static IServiceCollection AddGameServices(this IServiceCollection serviceCollection)
     {
         return serviceCollection.AddSingleton<IGameLocationsService, GameLocationsService>();

@@ -3,9 +3,9 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using NexusMods.App.UI.Settings;
 using NexusMods.Sdk.Settings;
-using NexusMods.Networking.GitHub;
 using NexusMods.Paths;
 using NexusMods.Sdk;
+using NexusMods.Sdk.GitHub;
 using R3;
 
 namespace NexusMods.App.UI.Overlays.Updater;

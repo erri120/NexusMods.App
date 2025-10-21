@@ -102,7 +102,6 @@
         <ProjectReference Include="..\NexusMods.Networking.NexusWebApi\NexusMods.Networking.NexusWebApi.csproj" />
         <ProjectReference Include="..\NexusMods.App.Cli\NexusMods.App.Cli.csproj" />
         <ProjectReference Include="..\NexusMods.Collections\NexusMods.Collections.csproj" />
-        <ProjectReference Include="..\NexusMods.Networking.GitHub\NexusMods.Networking.GitHub.csproj" />
         <ProjectReference Include="..\NexusMods.Telemetry\NexusMods.Telemetry.csproj" />
         <ProjectReference Include="..\NexusMods.UI.Sdk\NexusMods.UI.Sdk.csproj" />
     </ItemGroup>

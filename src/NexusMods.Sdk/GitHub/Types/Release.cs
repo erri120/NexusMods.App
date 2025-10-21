@@ -2,7 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using JetBrains.Annotations;
 
-namespace NexusMods.Networking.GitHub.DTOs;
+namespace NexusMods.Sdk.GitHub;
 
 /// <summary>
 /// Release.

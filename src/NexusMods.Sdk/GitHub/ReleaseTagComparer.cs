@@ -1,9 +1,8 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using JetBrains.Annotations;
-using NexusMods.Networking.GitHub.DTOs;
 
-namespace NexusMods.Networking.GitHub;
+namespace NexusMods.Sdk.GitHub;
 
 /// <summary>
 /// Comparer for <see cref="Release"/> based on semantic versions in <see cref="Release.TagName"/>.
