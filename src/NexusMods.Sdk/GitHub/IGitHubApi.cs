@@ -23,4 +23,9 @@ public interface IGitHubApi
     /// Fetches the latest release.
     /// </summary>
     ValueTask<Release?> FetchLatestRelease(string organization, string repository, IComparer<Release>? comparer = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Returns a stream for the given asset.
+    /// </summary>
+    ValueTask<Stream> GetStream(Asset asset, CancellationToken cancellationToken = default);
 }

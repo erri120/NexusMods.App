@@ -101,4 +101,10 @@ internal class GitHubApi : IGitHubApi
         _logger.LogDebug("Latest release from GitHub for `{Organization}/{Repository}` is `{Name}`", organization, repository, latest.Name);
         return latest;
     }
+
+    public async ValueTask<Stream> GetStream(Asset asset, CancellationToken cancellationToken = default)
+    {
+        var uri = new Uri(asset.BrowserDownloadUrl);
+        return await _httpClient.GetStreamAsync(uri, cancellationToken: cancellationToken);
+    }
 }
