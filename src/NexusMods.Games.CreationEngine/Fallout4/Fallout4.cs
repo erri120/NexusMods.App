@@ -20,8 +20,8 @@ using NexusMods.Games.FOMOD;
 using NexusMods.Hashing.xxHash3;
 using NexusMods.Paths;
 using NexusMods.Sdk.FileStore;
+using NexusMods.Sdk.Games;
 using NexusMods.Sdk.IO;
-using NexusMods.Sdk.NexusModsApi;
 
 namespace NexusMods.Games.CreationEngine.Fallout4;
 
@@ -30,6 +30,8 @@ public partial class Fallout4 : AGame, ISteamGame, IGogGame, ICreationEngineGame
     private readonly IServiceProvider _serviceProvider;
     private readonly IDiagnosticEmitter[] _emitters;
     private readonly IStreamSourceDispatcher _streamSource;
+
+    public override GameId GameId { get; } = GameId.From("NexusMods.Games.CreationEngine.Fallout4");
 
     public Fallout4(IServiceProvider provider) : base(provider)
     {
@@ -43,7 +45,7 @@ public partial class Fallout4 : AGame, ISteamGame, IGogGame, ICreationEngineGame
     }
 
     public override string Name => "Fallout 4";
-    public override GameId GameId => GameId.From(1151);
+    public override Sdk.NexusModsApi.GameId NexusModsGameId =>  Sdk.NexusModsApi.GameId.From(1151);
     public override GamePath GetPrimaryFile(GameTargetInfo targetInfo) => new(LocationId.Game, "Fallout4.exe");
 
     protected override IReadOnlyDictionary<LocationId, AbsolutePath> GetLocations(IFileSystem fileSystem, GameLocatorResult installation)

@@ -14,8 +14,8 @@ using NexusMods.Games.Larian.BaldursGate3.Emitters;
 using NexusMods.Games.Larian.BaldursGate3.Installers;
 using NexusMods.Paths;
 using NexusMods.Paths.Utilities;
+using NexusMods.Sdk.Games;
 using NexusMods.Sdk.IO;
-using NexusMods.Sdk.NexusModsApi;
 
 namespace NexusMods.Games.Larian.BaldursGate3;
 
@@ -24,10 +24,11 @@ public class BaldursGate3 : AGame, ISteamGame, IGogGame
     private readonly IServiceProvider _serviceProvider;
     private readonly IFileSystem _fs;
     public override string Name => "Baldur's Gate 3";
+    public override GameId GameId { get; } = GameId.From("NexusMods.Games.Larian.BaldursGate3");
 
     public IEnumerable<uint> SteamIds => [1086940u];
     public IEnumerable<long> GogIds => [1456460669];
-    public override GameId GameId => GameId.From(3474);
+    public override Sdk.NexusModsApi.GameId NexusModsGameId => Sdk.NexusModsApi.GameId.From(3474);
     public static readonly GameDomain StaticDomain = GameDomain.From("baldursgate3");
     public override SupportType SupportType => SupportType.Official;
 

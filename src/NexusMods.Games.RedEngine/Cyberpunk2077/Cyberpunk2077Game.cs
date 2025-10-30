@@ -16,8 +16,8 @@ using NexusMods.Games.RedEngine.Cyberpunk2077.SortOrder;
 using NexusMods.Games.RedEngine.ModInstallers;
 using NexusMods.MnemonicDB.Abstractions;
 using NexusMods.Paths;
+using NexusMods.Sdk.Games;
 using NexusMods.Sdk.IO;
-using NexusMods.Sdk.NexusModsApi;
 
 namespace NexusMods.Games.RedEngine.Cyberpunk2077;
 
@@ -25,10 +25,12 @@ namespace NexusMods.Games.RedEngine.Cyberpunk2077;
 public class Cyberpunk2077Game : AGame, ISteamGame, IGogGame //, IEpicGame
 {
     public static readonly GameDomain StaticDomain = GameDomain.From("cyberpunk2077");
-    public static GameId GameIdStatic => GameId.From(3333);
     private readonly IServiceProvider _serviceProvider;
     private readonly IConnection _connection;
     private ISortOrderVariety[] _sortOrderVarieties = [];
+
+    internal static readonly GameId StaticGameId = GameId.From("NexusMods.Games.RedEngine.Cyberpunk2077");
+    public override GameId GameId { get; } = StaticGameId;
 
     public Cyberpunk2077Game(IServiceProvider provider, IConnection connection) : base(provider)
     {
@@ -45,7 +47,7 @@ public class Cyberpunk2077Game : AGame, ISteamGame, IGogGame //, IEpicGame
         => new Cyberpunk2077Synchronizer(provider);
 
     public override string Name => "Cyberpunk 2077";
-    public override GameId GameId => GameIdStatic;
+    public override Sdk.NexusModsApi.GameId NexusModsGameId => Sdk.NexusModsApi.GameId.From(3333);
     public override SupportType SupportType => SupportType.Official;
 
     public override HashSet<FeatureStatus> Features { get; } =

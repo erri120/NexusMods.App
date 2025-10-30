@@ -75,11 +75,11 @@ internal static class CliVerbs
     {
         var rows = from game in games
             from install in registry.Installations.Values
-            where game.GameId == install.Game.GameId
+            where game.NexusModsGameId == install.Game.NexusModsGameId
             orderby game.Name
             select new object[]
             {
-                game.Name, install.Game.GameId, install.Store, install.LocationsRegister.GetResolvedPath(LocationId.Game)
+                game.Name, install.Game.NexusModsGameId, install.Store, install.LocationsRegister.GetResolvedPath(LocationId.Game)
             };
 
         await renderer.Table(new[] {"Game", "GameId", "Store", "Location"}, rows);

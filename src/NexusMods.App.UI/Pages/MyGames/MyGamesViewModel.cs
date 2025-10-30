@@ -129,7 +129,7 @@ public class MyGamesViewModel : APageViewModel<IMyGamesViewModel>, IMyGamesViewM
                                 var filesToDelete = libraryDataProviders.SelectMany(dataProvider => dataProvider.GetAllFiles(gameId: installation.Game.GameId)).ToArray();
                                 var totalSize = filesToDelete.Sum(static Size (file) => file.Size);
 
-                                var collections = CollectionDownloader.GetCollections(conn.Db, installation.Game.GameId);
+                                var collections = CollectionDownloader.GetCollections(conn.Db, installation.Game.NexusModsGameId);
 
                                 var overlay = new RemoveGameOverlayViewModel
                                 {

@@ -1,5 +1,3 @@
-using NexusMods.Sdk.NexusModsApi;
-
 namespace NexusMods.Abstractions.GameLocators;
 
 /// <summary>
@@ -10,24 +8,15 @@ public interface ILocatableGame
     /// <summary>
     /// Human readable name of the game.
     /// </summary>
-    public string Name { get; }
-    
+    string Name { get; }
+
     /// <summary>
-    /// Unique identifier for the game.
-    /// This ID can be obtained from the V2 API.
+    /// Unique identifier of the game on Nexus Mods.
     /// </summary>
-    /// <remarks>
-    ///     This can be obtained with a V2 call like:
-    ///
-    ///     ```
-    ///     query Game {
-    ///         game(domainName: "site") {
-    ///             id
-    ///         }
-    ///     }
-    ///
-    ///     To https://api.nexusmods.com/v2/graphql
-    ///     ```
-    /// </remarks>
-    public GameId GameId { get; }
+    Sdk.NexusModsApi.GameId NexusModsGameId { get; }
+
+    /// <summary>
+    /// Unique identifier of the game.
+    /// </summary>
+    Sdk.Games.GameId GameId { get; }
 }

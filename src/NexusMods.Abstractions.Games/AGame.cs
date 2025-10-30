@@ -9,8 +9,8 @@ using NexusMods.Abstractions.Loadouts;
 using NexusMods.Abstractions.Loadouts.Synchronizers;
 using NexusMods.MnemonicDB.Abstractions;
 using NexusMods.Paths;
+using NexusMods.Sdk.Games;
 using NexusMods.Sdk.IO;
-using NexusMods.Sdk.NexusModsApi;
 
 namespace NexusMods.Abstractions.Games;
 
@@ -63,6 +63,9 @@ public abstract class AGame : IGame
 
     /// <inheritdoc />
     public virtual HashSet<FeatureStatus> Features { get; } = [];
+
+    /// <inheritdoc />
+    public abstract Sdk.NexusModsApi.GameId NexusModsGameId { get; }
 
     /// <inheritdoc />
     public abstract GameId GameId { get; }

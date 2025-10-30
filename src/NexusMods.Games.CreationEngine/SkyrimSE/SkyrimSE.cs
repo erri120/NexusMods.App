@@ -20,8 +20,8 @@ using NexusMods.Games.FOMOD;
 using NexusMods.Hashing.xxHash3;
 using NexusMods.Paths;
 using NexusMods.Sdk.FileStore;
+using NexusMods.Sdk.Games;
 using NexusMods.Sdk.IO;
-using NexusMods.Sdk.NexusModsApi;
 
 namespace NexusMods.Games.CreationEngine.SkyrimSE;
 
@@ -30,6 +30,8 @@ public partial class SkyrimSE : AGame, ISteamGame, IGogGame, ICreationEngineGame
     private readonly IServiceProvider _serviceProvider;
     private readonly IDiagnosticEmitter[] _emitters;
     private readonly IStreamSourceDispatcher _streamSource;
+
+    public override GameId GameId { get; } = GameId.From("NexusMods.Games.CreationEngine.Fallout4");
 
     public SkyrimSE(IServiceProvider provider) : base(provider)
     {
@@ -43,7 +45,7 @@ public partial class SkyrimSE : AGame, ISteamGame, IGogGame, ICreationEngineGame
     }
 
     public override string Name => "Skyrim Special Edition";
-    public override GameId GameId => GameId.From(1704);
+    public override Sdk.NexusModsApi.GameId NexusModsGameId => Sdk.NexusModsApi.GameId.From(1704);
     public override GamePath GetPrimaryFile(GameTargetInfo targetInfo) => new(LocationId.Game, "SkyrimSE.exe");
 
     protected override IReadOnlyDictionary<LocationId, AbsolutePath> GetLocations(IFileSystem fileSystem, GameLocatorResult installation)

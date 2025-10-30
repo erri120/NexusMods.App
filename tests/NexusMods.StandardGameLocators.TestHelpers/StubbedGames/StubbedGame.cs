@@ -1,6 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using NexusMods.Abstractions.FileExtractor;
 using NexusMods.Abstractions.GameLocators;
 using NexusMods.Abstractions.GameLocators.GameCapabilities;
 using NexusMods.Abstractions.GameLocators.Stores.EADesktop;
@@ -14,8 +13,8 @@ using NexusMods.Abstractions.Library.Installers;
 using NexusMods.Abstractions.Loadouts.Synchronizers;
 using NexusMods.Paths;
 using NexusMods.Sdk.FileExtractor;
+using NexusMods.Sdk.Games;
 using NexusMods.Sdk.IO;
-using NexusMods.Sdk.NexusModsApi;
 
 // ReSharper disable InconsistentNaming
 
@@ -26,7 +25,8 @@ public class StubbedGame : AGame, IEADesktopGame, IEpicGame, IOriginGame, ISteam
     private readonly ILogger<StubbedGame> _logger;
     private readonly IEnumerable<IGameLocator> _locators;
     public override string Name => "Stubbed Game";
-    public override GameId GameId => Sdk.NexusModsApi.GameId.From(uint.MaxValue);
+    public override Sdk.NexusModsApi.GameId NexusModsGameId => Sdk.NexusModsApi.GameId.From(uint.MaxValue);
+    public override GameId GameId { get; } = GameId.From("NexusMods.StubbedGame");
 
     public override SupportType SupportType => SupportType.Unsupported;
 

@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
 using NexusMods.Abstractions.Loadouts;
+using NexusMods.Sdk.Games;
 using NexusMods.Sdk.Jobs;
-using NexusMods.Sdk.NexusModsApi;
 
 namespace NexusMods.DataModel;
 
@@ -10,7 +10,7 @@ namespace NexusMods.DataModel;
 /// </summary>
 public class ToolManager : IToolManager
 {
-    private readonly ILookup<GameId,ITool> _tools;
+    private readonly ILookup<GameId, ITool> _tools;
     private readonly ILogger<ToolManager> _logger;
     private readonly ISynchronizerService _syncService;
 
@@ -40,7 +40,7 @@ public class ToolManager : IToolManager
     {
         if (!tool.GameIds.Contains(loadout.InstallationInstance.Game.GameId))
             throw new Exception("Tool does not support this game");
-        
+
         _logger.LogInformation("Applying loadout {LoadoutId} on {GameName} {GameVersion}", 
             loadout.Id, loadout.InstallationInstance.Game.Name, loadout.GameVersion);
         await _syncService.Synchronize(loadout);

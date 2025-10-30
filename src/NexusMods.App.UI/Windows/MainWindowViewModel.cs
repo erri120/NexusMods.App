@@ -28,7 +28,7 @@ using NexusMods.CLI;
 using NexusMods.CrossPlatform;
 using NexusMods.MnemonicDB.Abstractions;
 using NexusMods.Sdk;
-using NexusMods.Sdk.NexusModsApi;
+using NexusMods.Sdk.Games;
 using NexusMods.UI.Sdk;
 using R3;
 using ReactiveUI;
@@ -271,8 +271,10 @@ public class MainWindowViewModel : AViewModel<IMainWindowViewModel>, IMainWindow
         });
     }
 
-    private Optional<(LoadoutId, WorkspaceId)> GetWorkspaceIdForGame(IWorkspaceController workspaceController, GameId gameId)
+    private Optional<(LoadoutId, WorkspaceId)> GetWorkspaceIdForGame(IWorkspaceController workspaceController, Sdk.NexusModsApi.GameId nexusModsGameId)
     {
+        var gameId = _serviceProvider.GetServices<ILocatableGame>().First(game => game.NexusModsGameId == nexusModsGameId).GameId;
+
         if (workspaceController.ActiveWorkspace.Context is LoadoutContext existingLoadoutContext && IsCorrectLoadoutForGame(existingLoadoutContext.LoadoutId, gameId))
             return (existingLoadoutContext.LoadoutId, workspaceController.ActiveWorkspaceId);
 

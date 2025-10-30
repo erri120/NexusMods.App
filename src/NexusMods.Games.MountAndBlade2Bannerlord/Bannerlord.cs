@@ -17,8 +17,8 @@ using NexusMods.Games.MountAndBlade2Bannerlord.Installers;
 using NexusMods.Games.MountAndBlade2Bannerlord.LauncherManager;
 using NexusMods.Games.MountAndBlade2Bannerlord.Utils;
 using NexusMods.Paths;
+using NexusMods.Sdk.Games;
 using NexusMods.Sdk.IO;
-using NexusMods.Sdk.NexusModsApi;
 using static NexusMods.Games.MountAndBlade2Bannerlord.BannerlordConstants;
 
 namespace NexusMods.Games.MountAndBlade2Bannerlord;
@@ -29,15 +29,16 @@ namespace NexusMods.Games.MountAndBlade2Bannerlord;
 /// </summary>
 public sealed class Bannerlord : AGame, ISteamGame, IGogGame, IXboxGame//, IEpicGame
 {
-    public static readonly GameId GameIdStatic = Sdk.NexusModsApi.GameId.From(3174);
+    public static readonly Sdk.NexusModsApi.GameId NexusModsGameIdStatic = Sdk.NexusModsApi.GameId.From(3174);
     public static readonly GameDomain DomainStatic = GameDomain.From("mountandblade2bannerlord");
     public static string DisplayName => "Mount & Blade II: Bannerlord";
+    public override GameId GameId { get; } = GameId.From("NexusMods.Games.Bannerlord");
 
     private readonly IServiceProvider _serviceProvider;
     private readonly LauncherManagerFactory _launcherManagerFactory;
 
     public override string Name => DisplayName;
-    public override GameId GameId => GameIdStatic;
+    public override Sdk.NexusModsApi.GameId NexusModsGameId => NexusModsGameIdStatic;
     public override SupportType SupportType => SupportType.Official;
 
     public override HashSet<FeatureStatus> Features { get; } =
