@@ -1,18 +1,23 @@
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using NexusMods.Abstractions.NexusModsLibrary.Models;
+using NexusMods.MnemonicDB.Abstractions;
+using NexusMods.MnemonicDB.Abstractions.IndexSegments;
 
 namespace NexusMods.App.Server.Pages;
 
 public class IndexModel : PageModel
 {
-    private readonly ILogger<IndexModel> _logger;
+    private readonly IConnection _connection;
 
-    public IndexModel(ILogger<IndexModel> logger)
+    public Entities<CollectionRevisionMetadata.ReadOnly> CollectionRevisions { get; set; }
+
+    public IndexModel(IConnection connection)
     {
-        _logger = logger;
+        _connection = connection;
     }
 
     public void OnGet()
     {
+        CollectionRevisions = CollectionRevisionMetadata.All(_connection.Db);
     }
 }

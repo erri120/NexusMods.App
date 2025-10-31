@@ -4,7 +4,10 @@
     ViewData["Title"] = "Home page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+@foreach (var collectionRevision in Model.CollectionRevisions)
+{
+    <div>
+        <a href="/collection/@collectionRevision.Id.Value">@collectionRevision.Collection.Name Revision @collectionRevision.RevisionNumber</a>
+        <img src="/collection-image/@collectionRevision.Collection.Id.Value" alt="Image of the collection @collectionRevision.Collection.Name"/>
+    </div>
+}

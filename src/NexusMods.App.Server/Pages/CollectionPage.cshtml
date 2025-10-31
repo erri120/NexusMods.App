@@ -1,0 +1,8 @@
+@page "/collection/{id}"
+@model NexusMods.App.Server.Pages.CollectionPage
+
+<main>
+    <p>@Model.Metadata.Collection.Name Revision @Model.Metadata.RevisionNumber</p>
+    <img src="/collection-image/@Model.Metadata.Collection.Id.Value" alt="Image of the collection @Model.Metadata.Collection.Name"/>
+</main>
+

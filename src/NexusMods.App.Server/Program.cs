@@ -38,6 +38,12 @@ public class Program
 
         var app = builder.Build();
 
+        TaskScheduler.UnobservedTaskException += (sender, eventArgs) =>
+        {
+            app.Services.GetRequiredService<ILogger<Program>>().LogError(eventArgs.Exception, "Unobserved task exception thrown by {SenderType}: {Sender}", sender?.GetType(), sender);
+            eventArgs.SetObserved();
+        };
+
         // Configure the HTTP request pipeline.
         if (!app.Environment.IsDevelopment())
         {
@@ -52,6 +58,7 @@ public class Program
 
         app.UseAuthorization();
 
+        app.MapControllers();
         app.MapStaticAssets();
         app.MapRazorPages().WithStaticAssets();
 
