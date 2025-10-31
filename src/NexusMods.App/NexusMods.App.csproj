@@ -23,12 +23,12 @@
         <ProjectReference Include="..\NexusMods.Games.MountAndBlade2Bannerlord\NexusMods.Games.MountAndBlade2Bannerlord.csproj" />
         <ProjectReference Include="..\NexusMods.Games.TestHarness\NexusMods.Games.TestHarness.csproj" />
         <ProjectReference Include="..\NexusMods.Networking.EpicGameStore\NexusMods.Networking.EpicGameStore.csproj" />
-        <ProjectReference Include="..\\NexusMods.Networking.GOG\NexusMods.Networking.GOG.csproj" />
-        <ProjectReference Include="..\\NexusMods.Networking.HttpDownloader\NexusMods.Networking.HttpDownloader.csproj" />
-        <ProjectReference Include="..\\NexusMods.Networking.NexusWebApi\NexusMods.Networking.NexusWebApi.csproj" />
-        <ProjectReference Include="..\\NexusMods.Networking.Steam\NexusMods.Networking.Steam.csproj" />
+        <ProjectReference Include="..\NexusMods.Networking.GOG\NexusMods.Networking.GOG.csproj" />
+        <ProjectReference Include="..\NexusMods.Networking.HttpDownloader\NexusMods.Networking.HttpDownloader.csproj" />
+        <ProjectReference Include="..\NexusMods.Networking.NexusWebApi\NexusMods.Networking.NexusWebApi.csproj" />
+        <ProjectReference Include="..\NexusMods.Networking.Steam\NexusMods.Networking.Steam.csproj" />
         <ProjectReference Include="..\NexusMods.App.UI\NexusMods.App.UI.csproj" />
-        <ProjectReference Include="..\\NexusMods.Networking.Steam\NexusMods.Networking.Steam.csproj" />
+        <ProjectReference Include="..\NexusMods.Networking.Steam\NexusMods.Networking.Steam.csproj" />
         <ProjectReference Include="..\NexusMods.App.UI\NexusMods.App.UI.csproj" />
         <ProjectReference Include="..\NexusMods.App.Cli\NexusMods.App.Cli.csproj" />
         <ProjectReference Include="..\NexusMods.Collections\NexusMods.Collections.csproj" />
@@ -40,9 +40,6 @@
         <ProjectReference Include="..\NexusMods.SingleProcess\NexusMods.SingleProcess.csproj" />
         <ProjectReference Include="..\NexusMods.Telemetry\NexusMods.Telemetry.csproj" />
         <ProjectReference Include="..\NexusMods.Themes.NexusFluentDark\NexusMods.Themes.NexusFluentDark.csproj" />
-    </ItemGroup>
-   
-    <ItemGroup>
         <ProjectReference Include="..\NexusMods.Games.StardewValley\NexusMods.Games.StardewValley.csproj" />
         <ProjectReference Include="..\NexusMods.Games.RedEngine\NexusMods.Games.RedEngine.csproj" />
     </ItemGroup>

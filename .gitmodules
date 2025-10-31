@@ -5,3 +5,6 @@
 	path = extern/SMAPI
 	url = https://github.com/Pathoschild/SMAPI.git
 	branch = stable
+[submodule "src/NexusMods.App.Server/wwwroot/lib/htmx"]
+	path = src/NexusMods.App.Server/wwwroot/lib/htmx
+	url = git@github.com:bigskysoftware/htmx.git
