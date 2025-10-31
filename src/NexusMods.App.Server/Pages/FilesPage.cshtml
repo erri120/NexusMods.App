@@ -1,0 +1,34 @@
+@page
+@using NexusMods.Abstractions.GameLocators
+@model NexusMods.App.Server.Pages.FilesPage
+
+<p>Total files: @Model.Files.Count</p>
+
+<input id="filter-value" type="text" placeholder="search..."/>
+
+<div id="files-table"></div>
+
+<script type="text/javascript">
+    const tableData = [
+        @foreach (var loadoutFile in Model.Files)
+        {
+            <text>{ id: @loadoutFile.Id.Value, path: "@loadoutFile.AsLoadoutItemWithTargetPath().TargetPath.Item3", size: @loadoutFile.Size.Value },</text>
+        }
+    ];
+
+    const table = new Tabulator("#files-table", {
+        height: 600,
+        data: tableData,
+        layout: "fitColumns",
+        columns: [
+            { title: "Id", field: "id" },
+            { title: "Path", field: "path" },
+            { title: "Size", field: "size" }
+        ]
+    });
+
+    const inputElement = document.getElementById("filter-value");
+    inputElement.addEventListener("keyup", () => {
+        table.setFilter("path", "like", inputElement.value);
+    });
+</script>
