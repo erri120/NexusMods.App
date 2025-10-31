@@ -6,6 +6,8 @@ using System.Reactive;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using Avalonia;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -139,13 +141,12 @@ public class Program
             LogMessages.UnobservedReactiveThrownException(_logger, ex);
         });
 
-
         try
         {
             if (startupMode.RunAsMain)
             {
                 LogMessages.StartingProcess(_logger, Environment.ProcessPath, Environment.ProcessId, args);
-                
+
                 if (startupMode.ShowUI)
                 {
                     var task = RunCliTaskAsMain(services, startupMode);
@@ -319,7 +320,7 @@ public class Program
         GameLocatorSettings? gameLocatorSettings = null)
     {
         var observableTarget = new ObservableLoggingTarget();
-        var host = new HostBuilder().ConfigureServices(services =>
+        var hostBuilder = new HostBuilder().ConfigureServices(services =>
         {
             var s = services.AddApp(
                 trackingSettings,
@@ -335,9 +336,18 @@ public class Program
                 s.OverrideSettingsForTests<DataModelSettings>(settings => settings with { UseInMemoryDataModel = true, });
             }
         })
-        .ConfigureLogging((_, builder) => AddLogging(observableTarget, builder, loggingSettings, startupMode))
-        .Build();
+        .ConfigureLogging((_, builder) => AddLogging(observableTarget, builder, loggingSettings, startupMode));
 
+        if (startupMode.RunAsMain)
+        {
+            hostBuilder = hostBuilder
+                .ConfigureWebHostDefaults(webBuilder => webBuilder
+                    .UseStartup<Startup>()
+                    .UseUrls("http://localhost:5000")
+                );
+        }
+
+        var host = hostBuilder.Build();
         return ApplicationConstants.IsDebug ? new DebuggingHost(host) : host;
     }
 

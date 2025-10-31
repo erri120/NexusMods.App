@@ -2,6 +2,8 @@ using System.Diagnostics;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.ReactiveUI;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NexusMods.App.UI;
@@ -27,6 +29,18 @@ public class Startup
     private static IServiceProvider _provider = null!;
     private static ILogger<Startup> _logger = null!;
     private static ulong _windowCount;
+
+    public void ConfigureServices(IServiceCollection services)
+    {
+        services.AddMcpServer().WithHttpTransport().WithToolsFromAssembly();
+    }
+
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    {
+        app.UseDeveloperExceptionPage();
+        app.UseRouting();
+        app.UseEndpoints(builder => builder.MapMcp());
+    }
 
 #pragma warning disable CS0028 // Disables warning about not being a valid entry point
     
