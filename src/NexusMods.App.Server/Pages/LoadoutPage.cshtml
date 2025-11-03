@@ -1,0 +1,10 @@
+@page "/Loadout/{id}"
+@model NexusMods.App.Server.Pages.LoadoutPage
+
+@{
+    Layout = null;
+}
+
+<h1>@Model.Loadout.Name for @Model.Loadout.LocatableGame.Name</h1>
+
+<button>Synchronize</button>

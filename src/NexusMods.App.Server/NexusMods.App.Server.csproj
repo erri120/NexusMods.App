@@ -25,5 +25,10 @@
         <ProjectReference Include="..\NexusMods.Games.StardewValley\NexusMods.Games.StardewValley.csproj" />
         <ProjectReference Include="..\NexusMods.Games.RedEngine\NexusMods.Games.RedEngine.csproj" />
     </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Quartz" />
+      <PackageReference Include="Quartz.AspNetCore" />
+    </ItemGroup>
     
 </Project>

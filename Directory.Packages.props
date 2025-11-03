@@ -2,6 +2,8 @@
   <ItemGroup>
     <PackageVersion Include="CommunityToolkit.HighPerformance" Version="8.4.0" />
     <PackageVersion Include="Mutagen.Bethesda.Fallout4" Version="0.51.3" />
+    <PackageVersion Include="Quartz" Version="3.15.1" />
+    <PackageVersion Include="Quartz.AspNetCore" Version="3.15.1" />
     <PackageVersion Include="SharpZipLib" Version="1.4.2" />
     <PackageVersion Include="TUnit" Version="0.57.24" />
     <PackageVersion Include="Avalonia.AvaloniaEdit" Version="11.3.0" />

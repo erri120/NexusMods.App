@@ -6,6 +6,13 @@
 
 <a href="/FilesPage">All Files</a>
 
+@foreach (var loadout in Model.Loadouts)
+{
+    <div>
+        <a href="/Loadout/{@loadout.Id.Value}">@loadout.Name for @loadout.LocatableGame.Name</a>
+    </div>
+}
+
 @foreach (var collectionRevision in Model.CollectionRevisions)
 {
     <div>

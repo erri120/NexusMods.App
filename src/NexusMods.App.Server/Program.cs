@@ -24,6 +24,8 @@ using NexusMods.Paths;
 using NexusMods.Sdk.Settings;
 using NexusMods.Sdk.Tracking;
 using NexusMods.Telemetry;
+using Quartz;
+using Quartz.AspNetCore;
 
 namespace NexusMods.App.Server;
 
@@ -35,6 +37,12 @@ public class Program
 
         Configure(builder.Services, trackingSettings: new TrackingSettings());
         builder.Services.AddRazorPages();
+        builder.Services.AddQuartz(q =>
+        {
+            q.UseInMemoryStore();
+        });
+
+        builder.Services.AddQuartzServer();
 
         var app = builder.Build();
 
