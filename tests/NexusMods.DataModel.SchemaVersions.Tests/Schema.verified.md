@@ -3,8 +3,8 @@ This schema is written to a markdown file for both documentation and validation 
 models in the app, then validate the tests to update this file. 
 
 ## Statistics
-   - Fingerprint: 0x03E30ECD79A64605
-   - Total attributes: 232
+   - Fingerprint: 0xF845DCC9AE4007F5
+   - Total attributes: 231
    - Total namespaces: 75
    
 ## Attributes
@@ -90,12 +90,11 @@ models in the app, then validate the tests to update this file.
 | NexusMods.Loadouts.DiskStateEntry/LastModified                                     | Int64                   | False   | False | False     | 
 | NexusMods.Loadouts.DiskStateEntry/Path                                             | Tuple3_Ref_UShort_Utf8I | False   | False | False     | 
 | NexusMods.Loadouts.DiskStateEntry/Size                                             | UInt64                  | False   | False | False     | 
-| NexusMods.Loadouts.GameMetadata/GameId                                             | UInt32                  | True    | False | False     | 
+| NexusMods.Loadouts.GameMetadata/GameId                                             | UInt64                  | True    | False | False     | 
 | NexusMods.Loadouts.GameMetadata/InitialDiskStateTransaction                        | Reference               | False   | False | False     | 
 | NexusMods.Loadouts.GameMetadata/LastScannedDiskStateTransaction                    | Reference               | False   | False | False     | 
 | NexusMods.Loadouts.GameMetadata/LastSyncedLoadout                                  | Reference               | False   | False | False     | 
 | NexusMods.Loadouts.GameMetadata/LastSyncedLoadoutTransaction                       | Reference               | False   | False | False     | 
-| NexusMods.Loadouts.GameMetadata/Name                                               | Utf8                    | False   | False | False     | 
 | NexusMods.Loadouts.GameMetadata/Path                                               | Utf8                    | True    | False | False     | 
 | NexusMods.Loadouts.GameMetadata/Store                                              | Ascii                   | False   | False | False     | 
 | NexusMods.Loadouts.LibraryLinkedLoadoutItem/LibraryItem                            | Reference               | True    | False | False     | 
