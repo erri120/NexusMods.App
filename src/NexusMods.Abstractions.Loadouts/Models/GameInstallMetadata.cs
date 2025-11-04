@@ -20,12 +20,6 @@ public partial class GameInstallMetadata : IModelDefinition
     public static readonly GameIdAttribute GameId = new(Namespace, nameof(GameId)) { IsIndexed = true };
 
     /// <summary>
-    /// User friendly name for the game.
-    /// May be referred to from diagnostics, telemetry or otherwise.
-    /// </summary>
-    public static readonly StringAttribute Name = new(Namespace, nameof(Name));
-    
-    /// <summary>
     /// The name of the store the game is from
     /// </summary>
     public static readonly GameStoreAttribute Store = new(Namespace, "Store");

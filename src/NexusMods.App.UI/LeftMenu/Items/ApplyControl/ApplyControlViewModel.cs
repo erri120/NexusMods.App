@@ -164,7 +164,7 @@ public class ApplyControlViewModel : AViewModel<IApplyControlViewModel>, IApplyC
         }
         catch (ExecutableInUseException)
         {
-            await MessageBoxOkViewModel.ShowGameAlreadyRunningError(_serviceProvider, loadout.Installation.Name);
+            await MessageBoxOkViewModel.ShowGameAlreadyRunningError(_serviceProvider, loadout.LocatableGame.DisplayName);
         }
     }
 }

@@ -1,11 +1,12 @@
 using FluentAssertions;
 using NexusMods.Abstractions.Loadouts;
+using NexusMods.MnemonicDB.Abstractions;
 using NexusMods.Sdk.Games;
 using Xunit.Abstractions;
 
 namespace NexusMods.DataModel.SchemaVersions.Tests.MigrationSpecificTests;
 
-public class TestsFor_0010_ChangeGameMetadataGameId(ITestOutputHelper helper) : ALegacyDatabaseTest(helper)
+public class TestsFor_0010_ChangeGameMetadata(ITestOutputHelper helper) : ALegacyDatabaseTest(helper)
 {
     [Fact]
     public async Task Test()

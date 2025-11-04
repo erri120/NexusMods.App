@@ -91,7 +91,7 @@ internal sealed class TelemetryProvider : ITelemetryProvider, IDisposable
             var loadout = Loadout.Load(_connection.Db, kv.Key);
             if (!loadout.IsValid()) return Optional<Counters.LoadoutModCount>.None;
 
-            return new Counters.LoadoutModCount(loadout.Installation.Name, kv.Value);
+            return new Counters.LoadoutModCount(loadout.LocatableGame.DisplayName, kv.Value);
         }).Where(static optional => optional.HasValue).Select(static optional => optional.Value).ToArray();
     }
 

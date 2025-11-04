@@ -15,17 +15,16 @@ using NexusMods.Sdk.NexusModsApi;
 
 namespace NexusMods.DataModel.SchemaVersions.Migrations;
 
-public class _0010_ChangeGameMetadataGameId : ITransactionalMigration
+public class _0010_ChangeGameMetadata : ITransactionalMigration
 {
-    public static (MigrationId Id, string Name) IdAndName { get; } = MigrationId.ParseNameAndId(nameof(_0010_ChangeGameMetadataGameId));
+    public static (MigrationId Id, string Name) IdAndName { get; } = MigrationId.ParseNameAndId(nameof(_0010_ChangeGameMetadata));
 
     private readonly ILogger _logger;
     private readonly FrozenDictionary<NexusModsGameId, GameId> _idMappings;
-    private Optional<AttributeId> _attributeId = Optional<AttributeId>.None;
 
-    public _0010_ChangeGameMetadataGameId(IServiceProvider serviceProvider)
+    public _0010_ChangeGameMetadata(IServiceProvider serviceProvider)
     {
-        _logger = serviceProvider.GetRequiredService<ILogger<_0010_ChangeGameMetadataGameId>>();
+        _logger = serviceProvider.GetRequiredService<ILogger<_0010_ChangeGameMetadata>>();
 
         var enumerable = serviceProvider
             .GetServices<ILocatableGame>()
@@ -42,27 +41,65 @@ public class _0010_ChangeGameMetadataGameId : ITransactionalMigration
         _idMappings = enumerable.ToFrozenDictionary();
     }
 
+    private Optional<AttributeId> _gameIdAttributeId = Optional<AttributeId>.None;
+    private Optional<AttributeId> _nameAttributeId = Optional<AttributeId>.None;
+
     public Task Prepare(IDb db)
     {
-        var symbol = db.AttributeCache.AllAttributeIds.FirstOrDefault(symbol => symbol is { Namespace: "NexusMods.Loadouts.GameMetadata", Name: "GameId" });
-        if (symbol is null) return Task.CompletedTask;
+        var gameIdSymbol = db.AttributeCache.AllAttributeIds.FirstOrDefault(symbol => symbol is { Namespace: "NexusMods.Loadouts.GameMetadata", Name: "GameId" });
+        if (gameIdSymbol is not null)
+        {
+            _gameIdAttributeId = db.AttributeCache.GetAttributeId(gameIdSymbol);
+        }
 
-        _attributeId = db.AttributeCache.GetAttributeId(symbol);
+        var nameSymbol = db.AttributeCache.AllAttributeIds.FirstOrDefault(symbol => symbol is { Namespace: "NexusMods.Loadouts.GameMetadata", Name: "Name" });
+        if (nameSymbol is not null)
+        {
+            _nameAttributeId = db.AttributeCache.GetAttributeId(nameSymbol);
+        }
+
         return Task.CompletedTask;
     }
 
     public void Migrate(ITransaction tx, IDb db)
     {
-        if (!_attributeId.HasValue)
+        MigrateGameId(tx, db);
+        MigrateName(tx, db);
+    }
+
+    private void MigrateName(ITransaction tx, IDb db)
+    {
+        if (!_nameAttributeId.HasValue)
         {
-            _logger.LogInformation("Skipping migration, found no matching attribute");
+            _logger.LogInformation("Skipping name migration, found no matching attribute");
             return;
         }
 
-        var datoms = db.Datoms(new AttributeSlice(_attributeId.Value));
+        var datoms = db.Datoms(new AttributeSlice(_nameAttributeId.Value));
         if (datoms.Count == 0)
         {
-            _logger.LogInformation("Skipping migration, found no datoms to migrate");
+            _logger.LogInformation("Skipping name migration, found no datoms to migrate");
+            return;
+        }
+
+        foreach (var datom in datoms)
+        {
+            tx.Add(datom.Retract());
+        }
+    }
+
+    private void MigrateGameId(ITransaction tx, IDb db)
+    {
+        if (!_gameIdAttributeId.HasValue)
+        {
+            _logger.LogInformation("Skipping game id migration, found no matching attribute");
+            return;
+        }
+
+        var datoms = db.Datoms(new AttributeSlice(_gameIdAttributeId.Value));
+        if (datoms.Count == 0)
+        {
+            _logger.LogInformation("Skipping game id migration, found no datoms to migrate");
             return;
         }
 

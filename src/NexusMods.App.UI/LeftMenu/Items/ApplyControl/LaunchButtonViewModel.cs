@@ -85,7 +85,7 @@ public class LaunchButtonViewModel : AViewModel<ILaunchButtonViewModel>, ILaunch
         }
         catch (ExecutableInUseException)
         {
-            await MessageBoxOkViewModel.ShowGameAlreadyRunningError(_serviceProvider, marker.Installation.Name);
+            await MessageBoxOkViewModel.ShowGameAlreadyRunningError(_serviceProvider, marker.LocatableGame.DisplayName);
         }
         catch (Exception ex)
         {
