@@ -44,9 +44,9 @@ public static class IndexEpicGame
         var castedGame = (IGame)game;
 
         var installation = gameRegistry.Installations
-            .Where(g => g.Value.Game.NexusModsGameId == game.NexusModsGameId)
+            .Where(g => g.Value.Game.GameId == game.GameId)
             .FirstOrDefault(g => g.Value.Game is IEpicGame); 
-        
+
         if (installation.Value == null)
         {
             await renderer.TextLine($"Game {castedGame.DisplayName} is not installed via Epic Game Store.", token);

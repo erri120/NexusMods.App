@@ -233,9 +233,7 @@ public class NxmIpcProtocolHandler : IIpcProtocolHandler
             if (syncService.TryGetLastAppliedLoadout(installedGame, out _))
                 return installedGame;
 
-            var activeLoadouts = Loadout.All(connection.Db)
-                .Where(ld => ld.InstallationInstance.Game.NexusModsGameId == installedGame.Game.NexusModsGameId);
-
+            var activeLoadouts = Loadout.All(connection.Db).Where(ld => ld.InstallationInstance.Game.GameId == installedGame.Game.GameId);
             if (!activeLoadouts.Any()) continue;
             
             return installedGame;

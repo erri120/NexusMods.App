@@ -1008,7 +1008,7 @@ After asking design, we're choosing to simply open the mod page for now.
             }
 
             // Filter mod pages to only those for the current game
-            var currentGameId = _loadout.InstallationInstance.Game.NexusModsGameId;
+            var currentGameId = _loadout.InstallationInstance.Game.NexusModsGameId.Value;
             var modPagesWithUpdates = _modUpdateService.GetAllModPagesWithUpdates()
                 .Where(pair => 
                 {

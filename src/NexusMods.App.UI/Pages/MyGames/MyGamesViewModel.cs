@@ -111,7 +111,7 @@ public class MyGamesViewModel : APageViewModel<IMyGamesViewModel>, IMyGamesViewM
                     .Where(game =>
                     {
                         if (experimentalSettings.EnableAllGames) return true;
-                        return experimentalSettings.SupportedGames.Contains(game.Game.NexusModsGameId.Value);
+                        return experimentalSettings.SupportedGames.Contains(game.Game.GameId);
                     })
                     .ToReadOnlyObservableCollection()
                     .ToObservableChangeSet()
@@ -185,7 +185,7 @@ public class MyGamesViewModel : APageViewModel<IMyGamesViewModel>, IMyGamesViewM
                     .Where(game =>
                     {
                         if (experimentalSettings.EnableAllGames) return true;
-                        return experimentalSettings.SupportedGames.Contains(game.NexusModsGameId.Value);
+                        return experimentalSettings.SupportedGames.Contains(game.GameId);
                     })
                     .Cast<IGame>()
                     .Where(game => _installedGames.All(install => install.Installation.GetGame().NexusModsGameId != game.NexusModsGameId)); // Exclude found games
