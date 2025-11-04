@@ -428,8 +428,8 @@ public static class CollectionCreator
     {
         Debug.Assert(group.IsValid());
 
-        var gameId = group.AsLoadoutItem().Loadout.Installation.GameId;
-        var gameDomain = mappingCache[gameId];
+        var game = group.AsLoadoutItem().Loadout.InstallationInstance.Game;
+        var gameDomain = mappingCache[game.NexusModsGameId.Value];
 
         var collectionMods = new List<CollectionMod>();
 

@@ -2,7 +2,7 @@ using NexusMods.Abstractions.GameLocators;
 using NexusMods.MnemonicDB.Abstractions.Attributes;
 using NexusMods.MnemonicDB.Abstractions.BuiltInEntities;
 using NexusMods.MnemonicDB.Abstractions.Models;
-using NexusMods.Sdk.NexusModsApi;
+using NexusMods.Sdk.Games;
 
 namespace NexusMods.Abstractions.Loadouts;
 
@@ -17,8 +17,8 @@ public partial class GameInstallMetadata : IModelDefinition
     /// <summary>
     /// The game's unique id.
     /// </summary>
-    public static readonly NexusModsGameIdAttribute GameId = new(Namespace, nameof(GameId)) { IsIndexed = true };
-    
+    public static readonly GameIdAttribute GameId = new(Namespace, nameof(GameId)) { IsIndexed = true };
+
     /// <summary>
     /// User friendly name for the game.
     /// May be referred to from diagnostics, telemetry or otherwise.

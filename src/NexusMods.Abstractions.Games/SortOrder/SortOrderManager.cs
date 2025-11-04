@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NexusMods.Abstractions.Loadouts;
 using NexusMods.MnemonicDB.Abstractions;
-using NexusMods.Sdk.NexusModsApi;
+using NexusMods.Sdk.Games;
 using R3;
 using OneOf;
 
@@ -91,20 +91,19 @@ public class SortOrderManager : ISortOrderManager, IDisposable
         if (_sortOrderVarieties.Count > 0)
         {
             // Subscribe to changes in the sort orders
-            SubscribeToChanges(game.NexusModsGameId.Value);
+            SubscribeToChanges(game.GameId);
         }
     }
 
-    protected void SubscribeToChanges(NexusModsGameId nexusModsGameId)
+    protected void SubscribeToChanges(GameId gameId)
     {
         var compositeDisposable = new CompositeDisposable();
         var conn = _connection;
  
-        
         // Listen to Loadouts additions/removals
         Loadout.ObserveAll(_connection)
             .StartWithEmpty()
-            .FilterImmutable(l => l.Installation.GameId == nexusModsGameId)
+            .FilterImmutable(l => l.Installation.GameId == gameId)
             .ToObservable()
             .SubscribeAwait(this, static async (changes, state, token) =>
                 {
@@ -137,7 +136,7 @@ public class SortOrderManager : ISortOrderManager, IDisposable
         // Listen to collection groups additions/removals
         CollectionGroup.ObserveAll(_connection)
             .StartWithEmpty()
-            .FilterImmutable(cg => cg.AsLoadoutItemGroup().AsLoadoutItem().Loadout.Installation.GameId == nexusModsGameId)
+            .FilterImmutable(cg => cg.AsLoadoutItemGroup().AsLoadoutItem().Loadout.Installation.GameId == gameId)
             .ToObservable()
             .SubscribeAwait(this, static async (changes, state, token) =>
                 {
@@ -171,7 +170,7 @@ public class SortOrderManager : ISortOrderManager, IDisposable
         // Listen to item additions/removals
         // TODO: consider making this Variant specific, to only listen to changes for the relevant items
         // TODO: listen to changes to Game files too
-        SortOrderQueries.TrackLoadoutItemChanges(_connection, nexusModsGameId)
+        SortOrderQueries.TrackLoadoutItemChanges(_connection, gameId)
             .ToObservable()
             .SubscribeAwait(this, static async (changes, state, token) =>
             {
