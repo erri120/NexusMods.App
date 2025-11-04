@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
 using NexusMods.Abstractions.Loadouts;
+using NexusMods.Sdk.Games;
 using NexusMods.Sdk.Jobs;
-using NexusMods.Sdk.NexusModsApi;
 
 namespace NexusMods.DataModel;
 
@@ -10,7 +10,7 @@ namespace NexusMods.DataModel;
 /// </summary>
 public class ToolManager : IToolManager
 {
-    private readonly ILookup<NexusModsGameId,ITool> _tools;
+    private readonly ILookup<GameId, ITool> _tools;
     private readonly ILogger<ToolManager> _logger;
     private readonly ISynchronizerService _syncService;
 
@@ -28,7 +28,7 @@ public class ToolManager : IToolManager
     /// <inheritdoc />
     public IEnumerable<ITool> GetTools(Loadout.ReadOnly loadout)
     {
-        return _tools[loadout.InstallationInstance.Game.NexusModsGameId.Value];
+        return _tools[loadout.InstallationInstance.Game.GameId];
     }
 
     /// <inheritdoc />
@@ -38,7 +38,7 @@ public class ToolManager : IToolManager
         IJobMonitor monitor,
         CancellationToken token = default)
     {
-        if (!tool.GameIds.Contains(loadout.InstallationInstance.Game.NexusModsGameId.Value))
+        if (!tool.GameIds.Contains(loadout.InstallationInstance.Game.GameId))
             throw new Exception("Tool does not support this game");
         
         _logger.LogInformation("Applying loadout {LoadoutId} on {GameName} {GameVersion}", 
