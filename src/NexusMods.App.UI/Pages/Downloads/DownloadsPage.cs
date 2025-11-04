@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NexusMods.Abstractions.Serialization.Attributes;
 using NexusMods.App.UI.Windows;
 using NexusMods.App.UI.WorkspaceSystem;
-using NexusMods.Sdk.NexusModsApi;
+using NexusMods.Sdk.Games;
 
 namespace NexusMods.App.UI.Pages.Downloads;
 
@@ -14,7 +14,7 @@ public record DownloadsPageContext : IPageFactoryContext
     /// <summary>
     /// If provided, will limit the scope of downloads shown to the specified game.
     /// </summary>
-    public Optional<NexusModsGameId> GameScope { get; init; } = Optional<NexusModsGameId>.None;
+    public Optional<GameId> GameScope { get; init; } = Optional<GameId>.None;
 }
 
 [UsedImplicitly]

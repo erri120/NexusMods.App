@@ -126,7 +126,7 @@ public class MyGamesViewModel : APageViewModel<IMyGamesViewModel>, IMyGamesViewM
                             {
                                 if (GetJobRunningForGameInstallation(installation).IsT2) return;
 
-                                var filesToDelete = libraryDataProviders.SelectMany(dataProvider => dataProvider.GetAllFiles(nexusModsGameId: installation.Game.NexusModsGameId.Value)).ToArray();
+                                var filesToDelete = libraryDataProviders.SelectMany(dataProvider => dataProvider.GetAllFiles(installation.Game)).ToArray();
                                 var totalSize = filesToDelete.Sum(static Size (file) => file.Size);
 
                                 var collections = CollectionDownloader.GetCollections(conn.Db, installation.Game.NexusModsGameId.Value);
@@ -188,9 +188,8 @@ public class MyGamesViewModel : APageViewModel<IMyGamesViewModel>, IMyGamesViewM
                         return experimentalSettings.SupportedGames.Contains(game.GameId);
                     })
                     .Cast<IGame>()
-                    .Where(game => _installedGames.All(install => install.Installation.GetGame().NexusModsGameId != game.NexusModsGameId)); // Exclude found games
-                
-                
+                    .Where(game => _installedGames.All(install => install.Installation.Game.GameId != game.GameId)); // Exclude found games
+
                 var miniGameWidgetViewModels = supportedGamesAsIGame
                     .Select(game =>
                         {
@@ -198,9 +197,9 @@ public class MyGamesViewModel : APageViewModel<IMyGamesViewModel>, IMyGamesViewM
                             vm.Game = game;
                             vm.Name = game.DisplayName;
                             // is this supported game installed?
-                            vm.IsFound = _installedGames.Any(install => install.Installation.GetGame().NexusModsGameId == game.NexusModsGameId);
+                            vm.IsFound = _installedGames.Any(install => install.Installation.Game.GameId == game.GameId);
                             vm.GameInstallations = _installedGames
-                                .Where(install => install.Installation.GetGame().NexusModsGameId == game.NexusModsGameId)
+                                .Where(install => install.Installation.Game.GameId == game.GameId)
                                 .Select(install => install.Installation)
                                 .ToArray();
                             return vm;

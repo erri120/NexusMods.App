@@ -19,9 +19,8 @@ using NexusMods.Networking.NexusWebApi;
 using NexusMods.Networking.NexusWebApi.UpdateFilters;
 using NuGet.Versioning;
 using NexusMods.Paths;
-using NexusMods.Sdk.NexusModsApi;
+using NexusMods.Sdk.Games;
 using R3;
-using Observable = System.Reactive.Linq.Observable;
 
 namespace NexusMods.App.UI.Pages;
 
@@ -41,8 +40,11 @@ public class NexusModsDataProvider : ILibraryDataProvider, ILoadoutDataProvider
         _thumbnailLoader = new Lazy<IResourceLoader<EntityId, Bitmap>>(() => ImagePipelines.GetModPageThumbnailPipeline(serviceProvider));
     }
 
-    public LibraryFile.ReadOnly[] GetAllFiles(NexusModsGameId nexusModsGameId, IDb? db = null)
+    public LibraryFile.ReadOnly[] GetAllFiles(IGameData gameData, IDb? db = null)
     {
+        if (!gameData.NexusModsGameId.HasValue) return [];
+        var nexusModsGameId = gameData.NexusModsGameId.Value;
+
         db ??= _connection.Db;
 
         var libraryItems = NexusModsLibraryItem
@@ -68,7 +70,7 @@ public class NexusModsDataProvider : ILibraryDataProvider, ILoadoutDataProvider
         return NexusModsModPageMetadata
             .ObserveAll(_connection)
             // only show mod pages for the currently selected game
-            .FilterImmutable(modPage => modPage.Uid.GameId.Equals(libraryFilter.Game.NexusModsGameId))
+            .FilterImmutable(modPage => modPage.Uid.GameId == libraryFilter.Game.NexusModsGameId)
             // only show mod pages that have library files
             .FilterOnObservable(modPage => _connection
                 .ObserveDatoms(NexusModsLibraryItem.ModPageMetadata, modPage)

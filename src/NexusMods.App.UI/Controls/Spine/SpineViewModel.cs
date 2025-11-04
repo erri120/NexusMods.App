@@ -8,7 +8,6 @@ using DynamicData.Kernel;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using NexusMods.Abstractions.Games;
 using NexusMods.Abstractions.Loadouts;
 using NexusMods.App.UI.Controls.LoadoutBadge;
 using NexusMods.App.UI.Controls.Navigation;
@@ -25,7 +24,7 @@ using NexusMods.App.UI.Windows;
 using NexusMods.App.UI.WorkspaceAttachments;
 using NexusMods.App.UI.WorkspaceSystem;
 using NexusMods.MnemonicDB.Abstractions;
-using NexusMods.Sdk.NexusModsApi;
+using NexusMods.Sdk.Games;
 using NexusMods.UI.Sdk;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -291,7 +290,7 @@ public class SpineViewModel : AViewModel<ISpineViewModel>, ISpineViewModel
         workspaceController.ChangeOrCreateWorkspaceByContext<DownloadsContext>(() => new PageData
             {
                 FactoryId = DownloadsPageFactory.StaticId,
-                Context = new DownloadsPageContext { GameScope = Optional<NexusModsGameId>.None }
+                Context = new DownloadsPageContext { GameScope = Optional<GameId>.None },
             }
         );
     }

@@ -1,7 +1,9 @@
 using System.Reactive.Linq;
 using DynamicData;
+using DynamicData.Kernel;
 using Microsoft.Extensions.DependencyInjection;
 using NexusMods.Abstractions.Downloads;
+using NexusMods.Abstractions.GameLocators;
 using NexusMods.App.UI.Resources;
 using NexusMods.App.UI.Windows;
 using NexusMods.App.UI.WorkspaceSystem;
@@ -39,9 +41,11 @@ public class DownloadsPageViewModel : APageViewModel<IDownloadsPageViewModel>, I
     {
         var downloadsService = serviceProvider.GetRequiredService<IDownloadsService>();
 
+        var nexusModsGameId = context.GameScope.Convert(gameId => serviceProvider.GetServices<ILocatableGame>().FirstOrOptional(x => x.GameId == gameId).Convert(x => x.NexusModsGameId));
+
         // Create filter based on context
-        var filter = context.GameScope.HasValue
-            ? DownloadsFilter.ForGame(context.GameScope.Value)
+        var filter = nexusModsGameId.HasValue
+            ? DownloadsFilter.ForGame(nexusModsGameId.Value)
             : DownloadsFilter.All();
 
         var downloadsDataProvider = serviceProvider.GetRequiredService<IDownloadsDataProvider>();
@@ -51,8 +55,8 @@ public class DownloadsPageViewModel : APageViewModel<IDownloadsPageViewModel>, I
         TabIcon = IconValues.PictogramDownload;
         
         // Set header title and description based on context
-        (HeaderTitle, HeaderDescription) = context.GameScope.HasValue
-            ? (string.Format(Language.DownloadsLeftMenu_GameSpecificDownloads, downloadsDataProvider.ResolveGameName(context.GameScope.Value)), Language.DownloadsPage_GameSpecificDownloads_Description)
+        (HeaderTitle, HeaderDescription) = nexusModsGameId.HasValue
+            ? (string.Format(Language.DownloadsLeftMenu_GameSpecificDownloads, downloadsDataProvider.ResolveGameName(nexusModsGameId.Value)), Language.DownloadsPage_GameSpecificDownloads_Description)
             : (Language.DownloadsLeftMenu_AllDownloads, Language.DownloadsPage_AllDownloads_Description);
 
         // Create observables and commands
@@ -90,8 +94,8 @@ public class DownloadsPageViewModel : APageViewModel<IDownloadsPageViewModel>, I
             .ToObservable();
         
         // Create context-aware observables for running and paused items
-        HasRunningItems = context.GameScope.HasValue
-            ? downloadsService.GetRunningDownloadsForGame(context.GameScope.Value)
+        HasRunningItems = nexusModsGameId.HasValue
+            ? downloadsService.GetRunningDownloadsForGame(nexusModsGameId.Value)
                 .QueryWhenChanged(items => items.Count > 0)
                 .OnUI()
                 .ToObservable()
@@ -102,8 +106,8 @@ public class DownloadsPageViewModel : APageViewModel<IDownloadsPageViewModel>, I
                 .ToObservable()
                 .Prepend(false);
         
-        HasPausedItems = context.GameScope.HasValue
-            ? downloadsService.GetPausedDownloadsForGame(context.GameScope.Value)
+        HasPausedItems = nexusModsGameId.HasValue
+            ? downloadsService.GetPausedDownloadsForGame(nexusModsGameId.Value)
                 .QueryWhenChanged(items => items.Count > 0)
                 .OnUI()
                 .ToObservable()
@@ -154,12 +158,12 @@ public class DownloadsPageViewModel : APageViewModel<IDownloadsPageViewModel>, I
             ).AddTo(disposables);
 
             // Commands with CanExecute - context-aware implementation
-            PauseAllCommand = context.GameScope.HasValue
-                ? HasRunningItems.ToReactiveCommand<Unit>(_ => downloadsService.PauseAllForGame(context.GameScope.Value)).AddTo(disposables)
+            PauseAllCommand = nexusModsGameId.HasValue
+                ? HasRunningItems.ToReactiveCommand<Unit>(_ => downloadsService.PauseAllForGame(nexusModsGameId.Value)).AddTo(disposables)
                 : HasRunningItems.ToReactiveCommand<Unit>(_ => downloadsService.PauseAll()).AddTo(disposables);
-            
-            ResumeAllCommand = context.GameScope.HasValue
-                ? HasPausedItems.ToReactiveCommand<Unit>(_ => downloadsService.ResumeAllForGame(context.GameScope.Value)).AddTo(disposables)
+
+            ResumeAllCommand = nexusModsGameId.HasValue
+                ? HasPausedItems.ToReactiveCommand<Unit>(_ => downloadsService.ResumeAllForGame(nexusModsGameId.Value)).AddTo(disposables)
                 : HasPausedItems.ToReactiveCommand<Unit>(_ => downloadsService.ResumeAll()).AddTo(disposables);
             
             PauseSelectedCommand = SelectionHasRunningItems.ToReactiveCommand<Unit>(
