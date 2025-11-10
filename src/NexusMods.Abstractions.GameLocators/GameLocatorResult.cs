@@ -11,12 +11,10 @@ namespace NexusMods.Abstractions.GameLocators;
 /// <param name="TargetOS">Target OS of the game</param>
 /// <param name="Store"><see cref="GameStore"/> which installed the game.</param>
 /// <param name="Metadata">Metadata about the game.</param>
-/// <param name="Version">Version of the game found.</param>
 public record GameLocatorResult(
     AbsolutePath Path,
     IFileSystem GameFileSystem,
     IOSInformation TargetOS,
     GameStore Store,
-    IGameLocatorResultMetadata Metadata,
-    Version? Version = null
+    IGameLocatorResultMetadata Metadata
 );

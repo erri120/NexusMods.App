@@ -51,7 +51,7 @@ public class ManuallyAddedLocator : IGameLocator
         var result = await tx.Commit();
         var addedGame = result.Remap(ent);
         var gameRegistry = _provider.GetRequiredService<IGameRegistry>();
-        var install = await gameRegistry.Register(game, new GameLocatorResult(path, path.FileSystem, OSInformation.Shared, GameStore.ManuallyAdded, addedGame, version), this);
+        var install = await gameRegistry.Register(game, new GameLocatorResult(path, path.FileSystem, OSInformation.Shared, GameStore.ManuallyAdded, addedGame), this);
         var newId = result[ent.Id];
         return (newId, install);
     }
@@ -79,7 +79,7 @@ public class ManuallyAddedLocator : IGameLocator
         var nexusModsGameId = game.NexusModsGameId;
         if (!nexusModsGameId.HasValue) return [];
 
-        var games = ManuallyAddedGame.FindByGameId(_conn.Value.Db, nexusModsGameId.Value).Select(g => new GameLocatorResult(_fileSystem.FromUnsanitizedFullPath(g.Path), _fileSystem, OSInformation.Shared, GameStore.ManuallyAdded, g, Version.Parse(g.Version)));
+        var games = ManuallyAddedGame.FindByGameId(_conn.Value.Db, nexusModsGameId.Value).Select(g => new GameLocatorResult(_fileSystem.FromUnsanitizedFullPath(g.Path), _fileSystem, OSInformation.Shared, GameStore.ManuallyAdded, g));
         return games;
     }
 }

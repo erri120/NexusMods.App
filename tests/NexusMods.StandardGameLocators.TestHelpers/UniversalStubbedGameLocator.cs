@@ -40,8 +40,7 @@ public class UniversalStubbedGameLocator<TGame> : IGameLocator, IDisposable
             _path.Path.FileSystem,
             OSInformation.Shared,
             GameStore.Unknown,
-            new UnknownLocatorResultMetadata(LocatorIds),
-            _version ?? new Version(1, 0, 0, 0));
+            new UnknownLocatorResultMetadata(LocatorIds));
     }
 
     public void Dispose()
